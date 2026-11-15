@@ -8,6 +8,7 @@ on:
       - 'projects/**/edl.json'
       - 'projects/**/motion_hooks/**'
       - 'projects/**/podcast_source.json'
+      - '.agents/skills/talking-head-kz/**'
       - '.github/workflows/render-master-reel.yml'
   workflow_dispatch:
     inputs:
@@ -55,7 +56,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'
 
       - name: Install system FFmpeg, Kazakh fonts, and Playwright deps
         run: |
