@@ -15,7 +15,7 @@ KZ = 'ӘәҒғҚқҢңӨөҰұҮүҺһІі'
 RU = 'АаБбЯяЁёЩщЫы'
 
 ROLE_PREFERENCES = {
-    'impact': ('Unbounded-Black', 'Unbounded-ExtraBold', 'Montserrat-Black', 'RubikWetPaint-Regular', 'SegoeUIBlack', 'NotoSans-Black', 'DejaVuSans-Bold', 'Arial-Black'),
+    'impact': ('Unbounded-Black', 'Unbounded-ExtraBold', 'Montserrat-Black', 'Unbounded-Regular', 'SegoeUIBlack', 'NotoSans-Black', 'DejaVuSans-Bold', 'Arial-Black', 'RubikWetPaint-Regular'),
     'clean': ('Montserrat-ExtraBold', 'Montserrat-Bold', 'Inter-Bold', 'Inter-SemiBold', 'SegoeUI-Bold', 'SegoeUI-Semibold', 'NotoSans-SemiBold', 'LiberationSans-Bold', 'DejaVuSans-Bold', 'Arial-BoldMT'),
     'editorial': ('PlayfairDisplay-BlackItalic', 'PlayfairDisplay-BoldItalic', 'Cormorant-BoldItalic', 'CormorantGaramond-BoldItalic', 'TimesNewRomanPS-BoldItalicMT', 'PalatinoLinotype-BoldItalic', 'DejaVuSerif-BoldItalic', 'DejaVuSerif-Italic'),
     'tech': ('JetBrainsMono-ExtraBold', 'JetBrainsMono-Bold', 'Consolas-Bold', 'NotoSansMono-Bold', 'LiberationMono-Bold', 'DejaVuSansMono-Bold', 'CourierNewPS-BoldMT'),

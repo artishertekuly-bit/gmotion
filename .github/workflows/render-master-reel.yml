@@ -89,6 +89,7 @@ jobs:
           fdir = os.path.expanduser("~/.local/share/fonts/google-kz")
           specs = [
               ("Unbounded-Variable.ttf", 900, "Unbounded Black", "Regular", "Unbounded-Black"),
+              ("Montserrat-Variable.ttf", 900, "Montserrat Black", "Regular", "Montserrat-Black"),
               ("Montserrat-Variable.ttf", 800, "Montserrat ExtraBold", "Regular", "Montserrat-ExtraBold"),
               ("PlayfairDisplay-Italic.ttf", 700, "Playfair Display Bold Italic", "Italic", "PlayfairDisplay-BoldItalic"),
               ("Cormorant-Italic.ttf", 700, "Cormorant Bold Italic", "Italic", "Cormorant-BoldItalic"),
@@ -102,14 +103,18 @@ jobs:
                   tt = TTFont(src)
                   inst = instantiateVariableFont(tt, {"wght": wght}, inplace=False)
                   nt = inst["name"]
+                  nt.names = [r for r in nt.names if r.nameID not in (1, 2, 4, 6, 16, 17)]
                   for nid, val in ((1, fam), (2, sub), (4, f"{fam} {sub}"), (6, ps), (16, fam), (17, sub)):
                       nt.setName(val, nid, 3, 1, 0x0409)
                   out_p = os.path.join(fdir, f"{ps}.ttf")
                   inst.save(out_p)
-                  os.remove(src)
                   print("Instantiated", out_p)
               except Exception as e:
                   print("Font instantiate warn:", src_name, e)
+          for src_name in {s[0] for s in specs}:
+              p_rem = os.path.join(fdir, src_name)
+              if os.path.exists(p_rem):
+                  os.remove(p_rem)
           PY
           fc-cache -f
           python -X utf8 .agents/skills/talking-head-kz/scripts/font_check.py --roles || true

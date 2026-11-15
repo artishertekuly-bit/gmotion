@@ -324,12 +324,13 @@ class Renderer:
                 rem = max(0.0, ck['t1'] - t)
                 dur = max(ck['t1'] - ck['t0'], 0.05)
                 u = min(1.0, dt / dur)
-                taper = min(1.0, rem / 0.28)
+                taper = min(1.0, rem / 0.55)
                 ef = ck.get('effect', 'zoom_push')
                 if ef == 'zoom_push':
-                    rise = bez(min(1.0, dt / max(0.35, dur - 0.28)), 0.55, 0.9)
+                    rise = bez(min(1.0, dt / max(0.45, dur - 0.55)), 0.55, 0.9)
                     env = rise * bez(taper, 0.65, 0.85)
-                    mul *= ck.get('from_scale', 1.0) + (ck.get('to_scale', 1.08) - ck.get('from_scale', 1.0)) * env
+                    cap_to = min(ck.get('to_scale', 1.07), 1.07)
+                    mul *= ck.get('from_scale', 1.0) + (cap_to - ck.get('from_scale', 1.0)) * env
                 elif ef == 'snap_punch':
                     attack = min(1.0, dt / 0.08)
                     mul *= 1.0 + 0.07 * attack * math.exp(-dt * 7.5) * math.cos(dt * 10.0) * min(1.0, rem / 0.16)
@@ -862,7 +863,7 @@ class Renderer:
                     col_w = max(1, int(png.shape[1] * prog))
                     target_w = min(W * 0.78, max(240.0, len(T['text']) * T['size'] * 0.48))
                     sc = target_w / max(png.shape[1], 1)
-                    put(c, png[:, :col_w], png.shape[1] / 2.0, png.shape[0] / 2.0, sc, T['x'], T['y'] + T['size'] * 0.68, opacity=0.92)
+                    put(c, png[:, :col_w], png.shape[1] / 2.0, png.shape[0] / 2.0, sc, T['x'], T['y'] + T['size'] * 0.82, opacity=0.92)
             if T.get('barcode') and 'barcode' in self.fx_png:
                 bp = self.fx_png['barcode']
                 op = 0.85 if dt > 0.18 else (0.25 if int(dt * 40) % 2 else 0.95)
