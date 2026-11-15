@@ -1,0 +1,303 @@
+{
+ "window": [
+  6.0,
+  13.9
+ ],
+ "at": [
+  6.05,
+  9.95,
+  13.65
+ ],
+ "options": {
+  "A": {
+   "note": "frazix_dossier_hook + graffiti_underline_strike (4L)",
+   "zoom": "tight",
+   "preset": "frazix_dossier_hook",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "zoom_push",
+     "t0": 6.0,
+     "t1": 13.9,
+     "from": 1.0,
+     "to": 1.1
+    },
+    {
+     "layer": "depth",
+     "effect": "matte_backsplash",
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "graphic",
+     "preset": "frazix_dossier_hook",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "graffiti_underline_strike",
+     "sfx": "pop",
+     "t0": 6.0,
+     "t1": 13.9
+    }
+   ],
+   "inserts": [
+    {
+     "id": "var_a_frazix_dossier_hook",
+     "kind": "overlay",
+     "preset": "frazix_dossier_hook",
+     "t0": 6.05,
+     "t1": 9.2,
+     "title": "МЕН СОНЫ ХАБАРЛАСАМ ОСЫЛ",
+     "alpha": true,
+     "depth": "behind_speaker",
+     "trans": "cut",
+     "overlay": {
+      "src": "hooks_rendered/var_a_frazix_dossier_hook.mov"
+     }
+    }
+   ],
+   "text": [
+    {
+     "font": "impact",
+     "text": "МЕН СОНЫ ХАБАРЛАСАМ ОСЫЛАЙ БОЛУ КЕРЕК ПА ДЕЙМІН ",
+     "t0": 6.0,
+     "t1": 13.9,
+     "x": 540,
+     "y": 1280,
+     "size": 78,
+     "behind": false,
+     "caption_format": "graffiti_underline_strike",
+     "anim": "rise",
+     "tilt": 0,
+     "pill": null,
+     "underline": "yellow",
+     "barcode": false,
+     "color": "#FFD600"
+    }
+   ]
+  },
+  "B": {
+   "note": "graffiti_fact_explosion + behind_head_giant (4L)",
+   "zoom": "wide",
+   "preset": "graffiti_fact_explosion",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "micro_shake",
+     "t0": 6.0,
+     "t1": 13.9,
+     "amp_px": 6,
+     "dur": 0.24
+    },
+    {
+     "layer": "depth",
+     "effect": "halftone_drift",
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "graphic",
+     "preset": "graffiti_fact_explosion",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "behind_head_giant",
+     "sfx": "pop",
+     "t0": 6.0,
+     "t1": 13.9
+    }
+   ],
+   "inserts": [
+    {
+     "id": "var_b_graffiti_fact_explosion",
+     "kind": "overlay",
+     "preset": "graffiti_fact_explosion",
+     "t0": 6.05,
+     "t1": 9.2,
+     "title": "МЕН СОНЫ ХАБАРЛАСАМ ОСЫЛ",
+     "alpha": true,
+     "depth": "behind_speaker",
+     "trans": "cut",
+     "overlay": {
+      "src": "hooks_rendered/var_b_graffiti_fact_explosion.mov"
+     }
+    }
+   ],
+   "text": [
+    {
+     "font": "editorial",
+     "text": "мен соны хабарласам осылай болу керек па деймін ",
+     "t0": 6.0,
+     "t1": 13.9,
+     "x": 540,
+     "y": 580,
+     "size": 190,
+     "behind": true,
+     "caption_format": "behind_head_giant",
+     "anim": "rise",
+     "tilt": 0,
+     "pill": null,
+     "underline": null,
+     "barcode": false,
+     "color": "#FFFFFF"
+    }
+   ]
+  },
+  "C": {
+   "note": "threejs_3d_floating_totem + split_left_right_dialogue (4L)",
+   "zoom": "tight",
+   "preset": "threejs_3d_floating_totem",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "smooth_pan",
+     "t0": 6.0,
+     "t1": 13.9,
+     "pan_px": 22
+    },
+    {
+     "layer": "depth",
+     "effect": "matte_backsplash",
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "graphic",
+     "preset": "threejs_3d_floating_totem",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "split_left_right_dialogue",
+     "sfx": "pop",
+     "t0": 6.0,
+     "t1": 13.9
+    }
+   ],
+   "inserts": [
+    {
+     "id": "var_c_threejs_3d_floating_totem",
+     "kind": "overlay",
+     "preset": "threejs_3d_floating_totem",
+     "t0": 6.05,
+     "t1": 9.2,
+     "title": "МЕН СОНЫ ХАБАРЛАСАМ ОСЫЛ",
+     "alpha": true,
+     "depth": "behind_speaker",
+     "trans": "cut",
+     "overlay": {
+      "src": "hooks_rendered/var_c_threejs_3d_floating_totem.mov"
+     }
+    }
+   ],
+   "text": [
+    {
+     "font": "impact",
+     "text": "МЕН СОНЫ ХАБАРЛАСАМ ОСЫЛАЙ БОЛУ КЕРЕК ПА ДЕЙМІН ",
+     "t0": 6.0,
+     "t1": 13.9,
+     "x": 540,
+     "y": 1280,
+     "size": 78,
+     "behind": false,
+     "caption_format": "split_left_right_dialogue",
+     "anim": "rise",
+     "tilt": 0,
+     "pill": null,
+     "underline": null,
+     "barcode": false,
+     "color": "#FFD600"
+    }
+   ]
+  },
+  "D": {
+   "note": "lemo_ink_wash_history + whisper_glitch_box (4L)",
+   "zoom": "wide",
+   "preset": "lemo_ink_wash_history",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "smooth_pan",
+     "t0": 6.0,
+     "t1": 13.9,
+     "pan_px": -22
+    },
+    {
+     "layer": "depth",
+     "effect": "halftone_drift",
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "graphic",
+     "preset": "lemo_ink_wash_history",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "whisper_glitch_box",
+     "sfx": "pop",
+     "t0": 6.0,
+     "t1": 13.9
+    }
+   ],
+   "inserts": [
+    {
+     "id": "var_d_lemo_ink_wash_history",
+     "kind": "overlay",
+     "preset": "lemo_ink_wash_history",
+     "t0": 6.05,
+     "t1": 9.2,
+     "title": "МЕН СОНЫ ХАБАРЛАСАМ ОСЫЛ",
+     "alpha": true,
+     "depth": "behind_speaker",
+     "trans": "cut",
+     "overlay": {
+      "src": "hooks_rendered/var_d_lemo_ink_wash_history.mov"
+     }
+    }
+   ],
+   "text": [
+    {
+     "font": "editorial",
+     "text": "мен соны хабарласам осылай болу керек па деймін ",
+     "t0": 6.0,
+     "t1": 13.9,
+     "x": 540,
+     "y": 1280,
+     "size": 78,
+     "behind": false,
+     "caption_format": "whisper_glitch_box",
+     "anim": "terminal",
+     "tilt": 0,
+     "pill": null,
+     "underline": null,
+     "barcode": true,
+     "color": "#FFFFFF"
+    }
+   ]
+  }
+ }
+}

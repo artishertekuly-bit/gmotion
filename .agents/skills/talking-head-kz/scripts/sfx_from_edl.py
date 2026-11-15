@@ -113,6 +113,11 @@ def make(kind, seed=0):
         n = int(1.2 * SR)
         u = np.arange(n) / n
         return (band(rng.standard_normal(n), 800, 7000) * 0.5 + tone(110, n, 440) * 0.5) * u ** 2.5
+    if kind in ('glitch', 'click'):
+        n = int(0.09 * SR)
+        burst = band(rng.standard_normal(n), 1800, 6800)
+        gate = ((np.arange(n) // int(0.015 * SR)) % 2 == 0).astype(np.float32)
+        return burst * gate * env(n, 0.001, 0.022)
     raise ValueError(kind)
 
 
@@ -151,7 +156,7 @@ def events_from_edl(edl, fps):
             continue
         if T.get('pill') and not isinstance(s, str):
             continue
-        kind = s if isinstance(s, str) else {'anton': 'pop', 'serif': 'tick', 'mono': 'tick'}.get(T.get('font'))
+        kind = s if isinstance(s, str) else {'anton': 'pop', 'impact': 'pop', 'serif': 'tick', 'editorial': 'tick', 'mono': 'tick', 'tech': 'tick'}.get(T.get('font'))
         if kind:
             ev.append((on_frame(T['t0']), kind, T['text'].replace('\n', ' ')[:24]))
     ev.sort()

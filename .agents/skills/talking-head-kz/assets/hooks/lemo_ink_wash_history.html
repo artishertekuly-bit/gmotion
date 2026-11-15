@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+<title>4. lemo_ink_wash_history</title>
+<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<script src="_hook_core.js"></script>
+</head>
+<body>
+<canvas id="stage" width="1080" height="1920"></canvas>
+<script>
+// lemo-opuscar ink-wash parallax background + timeline ticks + calligraphic serif insight
+HookCore.initStage((ctx, t, imgs, cfg) => {
+  const { W, H, clamp, vnoise2d, springPhys, envelope, drawAsset } = HookCore;
+  const { alpha } = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+  const sp = springPhys(t, 190, 18);
+  const title = cfg.title || 'Уақыт пен тәжірибе';
+  const label = (cfg.label || 'ТАРИХИ БЕТБҰРЫС').toUpperCase();
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Soft ink wash nebula backdrop above shoulders
+  for (let i = 0; i < 6; i++) {
+    const nx = vnoise2d(i * 1.7 + t * 0.18, 0.5) * 420;
+    const ny = vnoise2d(0.3, i * 2.1 + t * 0.14) * 280;
+    const bx = 220 + nx;
+    const by = 260 + ny;
+    const r = (240 + i * 45) * sp;
+    const grad = ctx.createRadialGradient(bx, by, 10, bx, by, r);
+    grad.addColorStop(0, i % 2 === 0 ? 'rgba(237,230,222,0.16)' : 'rgba(255,214,0,0.11)');
+    grad.addColorStop(1, 'rgba(14,12,14,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(bx, by, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Subtle parchment hairline timeline
+  ctx.strokeStyle = 'rgba(237,230,222,0.45)';
+  ctx.lineWidth = 2;
+  const lineW = 760 * clamp(sp);
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - lineW / 2, 315);
+  ctx.lineTo(W / 2 + lineW / 2, 315);
+  ctx.stroke();
+
+  const shift = (t * 28) % 80;
+  for (let x = 180; x <= 900; x += 80) {
+    const px = x - shift;
+    if (px < 160 || px > 920) continue;
+    ctx.beginPath();
+    ctx.moveTo(px, 305);
+    ctx.lineTo(px, 325);
+    ctx.stroke();
+  }
+
+  drawAsset(ctx, imgs.halftone, W / 2, H / 2, W, H, 0.18 * alpha);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = cfg.accent;
+  ctx.font = '800 24px "Montserrat", sans-serif';
+  ctx.fillText(label, W / 2, 240);
+
+  ctx.fillStyle = '#EDE6DE';
+  ctx.font = 'italic 900 54px "Playfair Display", Georgia, serif';
+  ctx.fillText(title.slice(0, 28), W / 2, 294);
+  ctx.restore();
+}, {
+  halftone: '../../engine/assets/textures/halftone_1080x1920.png',
+});
+</script>
+</body>
+</html>

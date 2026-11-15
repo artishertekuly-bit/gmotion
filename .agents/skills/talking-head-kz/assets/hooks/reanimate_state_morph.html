@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+<title>6. reanimate_state_morph</title>
+<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<script src="_hook_core.js"></script>
+</head>
+<body>
+<canvas id="stage" width="1080" height="1920"></canvas>
+<script>
+// Reanimate State A -> State B continuous vertex & perceptual gamma-squared color morph
+HookCore.initStage((ctx, t, imgs, cfg) => {
+  const { W, lerp, clamp, seg, springPhys, mixColor, envelope, roundRectPath } = HookCore;
+  const { alpha } = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+
+  const uRaw = clamp(seg(t, 0.75, Math.min(cfg.dur - 0.55, 2.2)));
+  const u = springPhys(uRaw * 0.75, 220, 18);
+  const morphCol = mixColor(cfg.danger, cfg.accent2, u);
+  const cx = W / 2, cy = 365;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Card backing
+  roundRectPath(ctx, 130, 210, 820, 310, 28);
+  ctx.fillStyle = 'rgba(11,11,11,0.88)';
+  ctx.fill();
+  ctx.strokeStyle = morphCol;
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // State A polyline (falling chaotic dip) -> State B polyline (clean exponential rise)
+  const stateA = [[220, 330], [370, 395], [510, 360], [660, 445], [840, 470]];
+  const stateB = [[220, 455], [370, 415], [510, 355], [660, 295], [840, 245]];
+  ctx.beginPath();
+  for (let i = 0; i < stateA.length; i++) {
+    const px = lerp(stateA[i][0], stateB[i][0], u);
+    const py = lerp(stateA[i][1], stateB[i][1], u);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.strokeStyle = morphCol;
+  ctx.lineWidth = 9;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // Morphing state pill tags
+  ctx.font = '900 30px "Montserrat", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = u < 0.5 ? cfg.danger : 'rgba(255,255,255,0.45)';
+  ctx.fillText((cfg.label || 'БҰРЫН / ҚАТЕ').toUpperCase(), 175, 265);
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = u >= 0.5 ? cfg.accent2 : 'rgba(255,255,255,0.45)';
+  ctx.fillText((cfg.subtitle || 'ҚАЗІР / ДҰРЫС').toUpperCase(), 905, 265);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 42px "Unbounded", "Montserrat", sans-serif';
+  ctx.fillText((cfg.title || 'КҮЙ МОРФИНГІ').toUpperCase().slice(0, 22), cx, 575);
+  ctx.restore();
+}, {});
+</script>
+</body>
+</html>

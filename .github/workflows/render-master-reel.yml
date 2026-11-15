@@ -57,15 +57,25 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install system FFmpeg, Kazakh fonts, and Playwright deps
+      - name: Install system FFmpeg, 4-Role Kazakh Google Fonts, and Playwright deps
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             ffmpeg \
             fonts-dejavu-core \
             fonts-noto-core \
-            fonts-liberation
+            fonts-liberation \
+            fonts-jetbrains-mono || true
+          mkdir -p "$HOME/.local/share/fonts/google-kz"
+          curl -fsSL "https://github.com/google/fonts/raw/main/ofl/unbounded/Unbounded%5Bwght%5D.ttf" -o "$HOME/.local/share/fonts/google-kz/Unbounded-Variable.ttf" || true
+          curl -fsSL "https://github.com/google/fonts/raw/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf" -o "$HOME/.local/share/fonts/google-kz/Montserrat-Variable.ttf" || true
+          curl -fsSL "https://github.com/google/fonts/raw/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf" -o "$HOME/.local/share/fonts/google-kz/Inter-Variable.ttf" || true
+          curl -fsSL "https://github.com/google/fonts/raw/main/ofl/playfairdisplay/PlayfairDisplay-Italic%5Bwght%5D.ttf" -o "$HOME/.local/share/fonts/google-kz/PlayfairDisplay-Italic.ttf" || true
+          curl -fsSL "https://github.com/google/fonts/raw/main/ofl/cormorant/Cormorant-Italic%5Bwght%5D.ttf" -o "$HOME/.local/share/fonts/google-kz/Cormorant-Italic.ttf" || true
+          curl -fsSL "https://github.com/google/fonts/raw/main/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf" -o "$HOME/.local/share/fonts/google-kz/JetBrainsMono-Variable.ttf" || true
+          curl -fsSL "https://github.com/google/fonts/raw/main/ofl/rubikwetpaint/RubikWetPaint-Regular.ttf" -o "$HOME/.local/share/fonts/google-kz/RubikWetPaint-Regular.ttf" || true
           fc-cache -f
+          python -X utf8 .agents/skills/talking-head-kz/scripts/font_check.py --roles || true
 
       - name: Install Python vision, audio, yt-dlp, and Chromium renderer deps
         run: |
@@ -177,10 +187,12 @@ jobs:
       - name: Render 40% HTML / Three.js / WebGL motion hooks in Headless Chromium
         if: steps.resolve.outputs.skip != 'true'
         env:
+          PROJECT_DIR: ${{ steps.resolve.outputs.project_dir }}
           EDL_PATH: ${{ steps.resolve.outputs.edl_path }}
           RENDER_FPS: ${{ github.event.inputs.render_fps || '60' }}
           SKILL_DIR: ${{ github.workspace }}/.agents/skills/talking-head-kz
         run: |
+          python -X utf8 "$SKILL_DIR/scripts/storyboard.py" "$EDL_PATH" --plan-only --enrich-edl
           python -X utf8 "$SKILL_DIR/scripts/render_hooks_chromium.py" "$EDL_PATH" --fps "$RENDER_FPS"
 
       - name: Mix SFX cues from ./soundeffects/ + synthesized hits and validate EDL

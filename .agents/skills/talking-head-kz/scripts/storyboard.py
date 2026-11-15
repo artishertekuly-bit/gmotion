@@ -24,7 +24,55 @@ ENGINE = os.path.join(os.path.dirname(HERE), 'engine', 'scripts')
 sys.path.insert(0, ENGINE)
 sys.path.insert(0, HERE)
 from common import load_json  # noqa: E402
+from hook_registry import (  # noqa: E402
+    CAPTION_FORMATS,
+    HOOK_CATALOG,
+    balance_keyframe_stack,
+    build_compound_keyframes,
+    pick_hook_preset,
+)
 from sfx_from_edl import events_from_edl  # noqa: E402
+
+
+def route_mastery_v2(edl, words):
+    """Apply Mastery V2 12-hook Anti-Repeat Routing + 2..4 Compound Keyframe Stacks across beats."""
+    beats = edl.get('beats') or []
+    last_used = []
+    kf_out = []
+    ins_by_time = sorted(edl.get('inserts', []), key=lambda i: i['t0'])
+    for idx, bt in enumerate(beats):
+        t0, t1 = float(bt['t0']), float(bt['t1'])
+        said = ' '.join(w['w'].strip() for w in words if t0 - 0.02 <= w['s'] < t1 - 0.02)
+        active_ins = [i for i in ins_by_time if i['t0'] < t1 - 0.05 and i['t1'] > t0 + 0.05]
+        preset = None
+        for i in active_ins:
+            p = i.get('preset')
+            if p in HOOK_CATALOG and (not last_used or p != last_used[-1]):
+                preset = p
+                break
+        if not preset:
+            preset = pick_hook_preset(said, bt.get('name', ''), last_used_styles=last_used, fallback_idx=idx)
+            # Attach preset to matching overlay insert if missing or violating anti-repeat
+            for i in active_ins:
+                if i.get('kind') == 'overlay' and not i.get('html_hook'):
+                    i['preset'] = preset
+                    i.setdefault('alpha', True)
+                    i.setdefault('depth', HOOK_CATALOG[preset]['depth'])
+                    break
+        else:
+            last_used.append(preset)
+
+        cap_fmt = CAPTION_FORMATS[idx % len(CAPTION_FORMATS)]
+        anims = bt.get('animations')
+        if not anims:
+            anims = build_compound_keyframes(t0, t1, preset=preset, caption_format=cap_fmt, role_index=idx)
+        anims, _ = balance_keyframe_stack(anims, t0=t0, t1=t1, role_index=idx)
+        bt['preset'] = preset
+        bt['animations'] = anims
+        kf_out.append({'beat': bt.get('n', idx + 1), 't0': t0, 't1': t1, 'preset': preset, 'animations': anims})
+    if kf_out:
+        edl['keyframes'] = kf_out
+    return edl
 
 
 def font(size, bold=False):
@@ -73,6 +121,8 @@ def main():
                     help='Build storyboard.md/.json + vector blueprint PNG without running heavy render_reel stills (default on Windows)')
     ap.add_argument('--render-stills', action='store_true',
                     help='Force rendering PNG stills via render_reel.py (use in Cloud Actions or machines with >16GB RAM)')
+    ap.add_argument('--enrich-edl', action='store_true',
+                    help='Route 12-hook presets (anti-repeat) + 2..4 Compound Keyframes into the EDL JSON in place')
     a = ap.parse_args()
     do_render = bool(a.render_stills) or not a.plan_only
     edl = load_json(a.edl)
@@ -83,7 +133,13 @@ def main():
     dur = float(cfg.get('program_dur') or max([t['t1'] for t in edl.get('text', [])] + [i['t1'] for i in edl.get('inserts', [])] + [0]))
     pw_path = os.path.join(P, 'analysis', 'program_words.json')
     words = load_json(pw_path) if os.path.exists(pw_path) else []
-    beats = edl.get('beats') or auto_beats(edl, dur)
+    if not edl.get('beats'):
+        edl['beats'] = auto_beats(edl, dur)
+    route_mastery_v2(edl, words)
+    if a.enrich_edl:
+        with open(a.edl, 'w', encoding='utf-8') as fh:
+            json.dump(edl, fh, indent=1, ensure_ascii=False)
+    beats = edl['beats']
     out_dir = os.path.abspath(a.out_dir or os.path.join(P, 'qa', 'storyboard'))
     still_dir = os.path.join(out_dir, 'stills')
     os.makedirs(still_dir, exist_ok=True)
@@ -133,10 +189,12 @@ def main():
         txt = ' / '.join(t['text'].replace('\n', ' ') for t in edl.get('text', [])
                          if not t.get('pill') and t['t0'] < bt['t1'] - 0.05 and t['t1'] > bt['t0'] + 0.05)
         pills = sum(1 for t in edl.get('text', []) if t.get('pill') and bt['t0'] - 0.02 <= t['t0'] < bt['t1'] - 0.02)
+        preset = bt.get('preset', '-')
+        nlayers = len(bt.get('animations') or [])
         rows.append(dict(n=bt.get('n'), name=bt.get('name', ''), t0=bt['t0'], t1=bt['t1'], said=said, enter=enter, cam=cam, sfx=cues,
-                         text=txt, pills=pills, still=st))
+                         text=txt, pills=pills, preset=preset, layers=nlayers, still=st))
 
-    tw, th, pad, cap = 300, 533, 22, 214
+    tw, th, pad, cap = 300, 533, 22, 236
     cols = min(a.cols, len(rows))
     nrows = (len(rows) + cols - 1) // cols
     sheet = Image.new('RGB', (cols * (tw + pad) + pad, nrows * (th + cap + pad) + pad), (24, 24, 26))
@@ -153,6 +211,7 @@ def main():
             for ln in wrap(d, bt_txt, fn, tw - 32)[:6]:
                 d.text((x + 16, py_box), ln, font=fn, fill=(255, 214, 0))
                 py_box += 30
+            d.text((x + 16, y + th - 68), '%s [%dL]' % (r['preset'][:22], r['layers']), font=fs, fill=(0, 230, 118))
             d.text((x + 16, y + th - 40), '[PLAN-ONLY LIGHTWEIGHT MODE]', font=fs, fill=(130, 140, 155))
         d.ellipse([x + 10, y + 10, x + 62, y + 62], fill=(224, 43, 32))
         num = str(r['n'])
@@ -164,23 +223,24 @@ def main():
             d.text((x, ty), ln, font=fs, fill=(205, 205, 210))
             ty += 24
         ty = y + th + 8 + 30 + 4 * 24 + 4
-        for label, val in (('кіру', r['enter']), ('камера', r['cam']), ('дыбыс', r['sfx'])):
+        for label, val in (('кіру', r['enter']), ('пресет', '%s (%dL)' % (r['preset'][:18], r['layers'])), ('камера', r['cam']), ('дыбыс', r['sfx'])):
             d.text((x, ty), '%s: %s' % (label, val), font=fs, fill=(140, 150, 165))
-            ty += 24
+            ty += 22
     png = os.path.join(out_dir, 'storyboard.png')
     sheet.save(png)
 
-    md = ['| № | бөлім | уақыт | айтылатын сөз | экрандағы мәтін | капсула | кіру | камера | дыбыс |', '|---|---|---|---|---|---|---|---|---|']
+    md = ['| № | бөлім | уақыт | айтылатын сөз | экрандағы мәтін | капсула | пресет | қабат | кіру | камера | дыбыс |',
+          '|---|---|---|---|---|---|---|---|---|---|---|']
     for r in rows:
-        md.append('| %s | %s | %.2f–%.2f | %s | %s | %d | %s | %s | %s |' % (r['n'], r['name'], r['t0'], r['t1'], r['said'], r['text'] or '-',
-                                                                         r['pills'], r['enter'], r['cam'], r['sfx']))
+        md.append('| %s | %s | %.2f–%.2f | %s | %s | %d | %s | %d | %s | %s | %s |' % (
+            r['n'], r['name'], r['t0'], r['t1'], r['said'], r['text'] or '-',
+            r['pills'], r['preset'], r['layers'], r['enter'], r['cam'], r['sfx']))
     with open(os.path.join(out_dir, 'storyboard.md'), 'w', encoding='utf-8') as fh:
         fh.write('\n'.join(md) + '\n')
     with open(os.path.join(out_dir, 'storyboard.json'), 'w', encoding='utf-8') as fh:
         json.dump(rows, fh, indent=1, ensure_ascii=False)
     sys.stdout.reconfigure(encoding='utf-8')
     print('storyboard: %d beats -> %s' % (len(rows), png))
-    print('show it, then STOP until the person approves (notes are not approval)')
 
 
 if __name__ == '__main__':

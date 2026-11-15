@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+<title>9. halftone_cutout_backsplash</title>
+<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<script src="_hook_core.js"></script>
+</head>
+<body>
+<canvas id="stage" width="1080" height="1920"></canvas>
+<script>
+// presenter_mattes + halftone_1080x1920 giant kinetic typography emerging right behind speaker shoulders/neck
+HookCore.initStage((ctx, t, imgs, cfg) => {
+  const { W, H, clamp, springPhys, envelope, drawAsset } = HookCore;
+  const { alpha } = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+
+  const sp = springPhys(t, 220, 18);
+  const word = (cfg.title || 'РЕКОРД').toUpperCase();
+  const sub = (cfg.label || 'ҚАЗАҚ КИНОСЫ').toUpperCase();
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Pulsing radial studio glow behind speaker
+  const pulse = 1 + Math.sin(t * 2.5) * 0.04;
+  const g = ctx.createRadialGradient(W / 2, 620, 40, W / 2, 620, 560 * pulse);
+  g.addColorStop(0, 'rgba(255,214,0,0.38)');
+  g.addColorStop(0.55, 'rgba(237,59,34,0.16)');
+  g.addColorStop(1, 'rgba(14,12,14,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 120, W, 1100);
+
+  drawAsset(ctx, imgs.halftone, W / 2, H / 2 + Math.sin(t * 0.9) * 14, W, H, 0.45 * alpha);
+
+  // Giant 3D extruded typography placed across speaker back zone (behind_speaker depth)
+  const sc = 0.92 + 0.08 * sp;
+  ctx.save();
+  ctx.translate(W / 2, 575);
+  ctx.scale(sc, sc);
+  ctx.textAlign = 'center';
+  const mainWord = word.slice(0, 11);
+  ctx.font = '900 165px "Unbounded", "Montserrat", sans-serif';
+  // Extrusion depth slices
+  for (let d = 10; d >= 1; d--) {
+    ctx.fillStyle = d % 2 === 0 ? '#161216' : '#0B0B0B';
+    ctx.fillText(mainWord, d * 1.4, d * 1.6);
+  }
+  ctx.fillStyle = cfg.accent;
+  ctx.fillText(mainWord, 0, 0);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '800 34px "Montserrat", sans-serif';
+  ctx.fillText(sub.slice(0, 26), 0, -145);
+  ctx.restore();
+  ctx.restore();
+}, {
+  halftone: '../../engine/assets/textures/halftone_1080x1920.png',
+});
+</script>
+</body>
+</html>

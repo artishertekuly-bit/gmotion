@@ -1,0 +1,1501 @@
+{
+ "_about": "Mastery V2 EDL for Dariga Badykova podcast slice (MDCrs6R_Epg, 33:52.5-34:46.0): 7 unique presets, [2..4] layers, 8 caption formats, 4-role mixed fonts",
+ "name": "dariga_160mln_60_40",
+ "W": 1080,
+ "H": 1920,
+ "fps": 30,
+ "accent": "#FFD600",
+ "speaker_name": "Дариға Бадықова",
+ "speaker_title": "Актриса · Продюсер",
+ "beats": [
+  {
+   "n": 1,
+   "name": "Хук: 160 млн",
+   "t0": 0.0,
+   "t1": 6.0,
+   "preset": "opus_bento_grid_stats",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "zoom_push",
+     "t0": 0.0,
+     "t1": 6.0,
+     "from": 1.0,
+     "to": 1.1
+    },
+    {
+     "layer": "depth",
+     "effect": "matte_backsplash",
+     "t0": 0.0,
+     "t1": 6.0
+    },
+    {
+     "layer": "graphic",
+     "preset": "opus_bento_grid_stats",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 0.0,
+     "t1": 6.0
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 0.0,
+     "t1": 6.0
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "name": "Хабарласу",
+   "t0": 6.0,
+   "t1": 13.9,
+   "preset": "graffiti_circle_callout",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "smooth_pan",
+     "t0": 6.0,
+     "t1": 13.9,
+     "pan_px": -22
+    },
+    {
+     "layer": "depth",
+     "effect": "halftone_drift",
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "graphic",
+     "preset": "graffiti_circle_callout",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 6.0,
+     "t1": 13.9
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "name": "Шок · Феномен",
+   "t0": 13.9,
+   "t1": 19.8,
+   "preset": "pixelfx_energy_shader",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "micro_shake",
+     "t0": 13.9,
+     "t1": 19.8,
+     "amp_px": 6,
+     "dur": 0.24
+    },
+    {
+     "layer": "depth",
+     "effect": "matte_backsplash",
+     "t0": 13.9,
+     "t1": 19.8
+    },
+    {
+     "layer": "graphic",
+     "preset": "pixelfx_energy_shader",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 13.9,
+     "t1": 19.8
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 13.9,
+     "t1": 19.8
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "name": "Не алуға болады?",
+   "t0": 19.8,
+   "t1": 29.2,
+   "preset": "split_60_40_simulation",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "snap_punch",
+     "t0": 19.8,
+     "t1": 29.2,
+     "pan_px": -22
+    },
+    {
+     "layer": "depth",
+     "effect": "halftone_drift",
+     "t0": 19.8,
+     "t1": 29.2
+    },
+    {
+     "layer": "graphic",
+     "preset": "split_60_40_simulation",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 19.8,
+     "t1": 29.2
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 19.8,
+     "t1": 29.2
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "name": "Доллар мен Теңге",
+   "t0": 29.2,
+   "t1": 39.6,
+   "preset": "threejs_3d_floating_totem",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "zoom_push",
+     "t0": 29.2,
+     "t1": 39.6,
+     "pan_px": 22
+    },
+    {
+     "layer": "depth",
+     "effect": "matte_backsplash",
+     "t0": 29.2,
+     "t1": 39.6
+    },
+    {
+     "layer": "graphic",
+     "preset": "threejs_3d_floating_totem",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 29.2,
+     "t1": 39.6
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 29.2,
+     "t1": 39.6
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "name": "Қымбат екен...",
+   "t0": 39.6,
+   "t1": 48.8,
+   "preset": "frazix_dossier_hook",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "smooth_pan",
+     "t0": 39.6,
+     "t1": 48.8,
+     "from": 1.0,
+     "to": 1.1
+    },
+    {
+     "layer": "depth",
+     "effect": "halftone_drift",
+     "t0": 39.6,
+     "t1": 48.8
+    },
+    {
+     "layer": "graphic",
+     "preset": "frazix_dossier_hook",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 39.6,
+     "t1": 48.8
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 39.6,
+     "t1": 48.8
+    }
+   ]
+  },
+  {
+   "n": 7,
+   "name": "Жоқшылықтан страх",
+   "t0": 48.8,
+   "t1": 53.5,
+   "preset": "retro_terminal_decrypt",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "micro_shake",
+     "t0": 48.8,
+     "t1": 53.5,
+     "amp_px": 6,
+     "dur": 0.24
+    },
+    {
+     "layer": "depth",
+     "effect": "matte_backsplash",
+     "t0": 48.8,
+     "t1": 53.5
+    },
+    {
+     "layer": "graphic",
+     "preset": "retro_terminal_decrypt",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 48.8,
+     "t1": 53.5
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 48.8,
+     "t1": 53.5
+    }
+   ]
+  }
+ ],
+ "zoom": [
+  [
+   0.0,
+   3.01,
+   "tight"
+  ],
+  [
+   6.0,
+   13.9,
+   "tight"
+  ],
+  [
+   13.91,
+   16.81,
+   "wide"
+  ],
+  [
+   16.81,
+   19.81,
+   "tight"
+  ],
+  [
+   19.81,
+   22.61,
+   "wide"
+  ],
+  [
+   22.61,
+   25.31,
+   "tight"
+  ],
+  [
+   25.31,
+   27.11,
+   "wide"
+  ],
+  [
+   27.11,
+   30.3,
+   "tight"
+  ],
+  [
+   30.3,
+   33.31,
+   "wide"
+  ],
+  [
+   33.31,
+   36.41,
+   "tight"
+  ],
+  [
+   36.41,
+   39.41,
+   "wide"
+  ],
+  [
+   39.41,
+   42.91,
+   "tight"
+  ],
+  [
+   42.91,
+   46.21,
+   "wide"
+  ],
+  [
+   46.21,
+   48.81,
+   "tight"
+  ],
+  [
+   48.81,
+   51.71,
+   "wide"
+  ],
+  [
+   51.71,
+   53.5,
+   "tight"
+  ]
+ ],
+ "inserts": [
+  {
+   "id": "hook_b1_opus_bento",
+   "kind": "overlay",
+   "preset": "opus_bento_grid_stats",
+   "t0": 0.51,
+   "t1": 4.01,
+   "alpha": true,
+   "depth": "behind_speaker",
+   "bg_dim": 0.48,
+   "title": "160 МЛН ₸ КАССА",
+   "subtitle": "БІР КҮНДІК РЕКОРД",
+   "kpis": [
+    {
+     "label": "КАССА",
+     "val": "160M"
+    },
+    {
+     "label": "ӨСІМ",
+     "val": "+240%"
+    },
+    {
+     "label": "РЕЙТИНГ",
+     "val": "KZ #1"
+    }
+   ],
+   "sfx": "whoosh"
+  },
+  {
+   "id": "hook_b3_pixelfx_energy",
+   "kind": "overlay",
+   "preset": "pixelfx_energy_shader",
+   "t0": 13.91,
+   "t1": 18.8,
+   "alpha": true,
+   "depth": "behind_speaker",
+   "bg_dim": 0.42,
+   "title": "КИНО ФЕНОМЕНІ",
+   "subtitle": "ҚАЗАҚСТАН ПРОКАТЫ",
+   "sfx": "whoosh"
+  },
+  {
+   "id": "hook_b4_split_sim",
+   "kind": "overlay",
+   "preset": "split_60_40_simulation",
+   "t0": 21.4,
+   "t1": 25.8,
+   "alpha": true,
+   "depth": "behind_speaker",
+   "bg_dim": 0.45,
+   "title": "НЕ АЛУҒА БОЛАДЫ?",
+   "left_title": "КҮМӘН",
+   "right_title": "160 МЛН ₸",
+   "sfx": "whoosh"
+  },
+  {
+   "id": "hook_b5_threejs_totem",
+   "kind": "overlay",
+   "preset": "threejs_3d_floating_totem",
+   "t0": 29.8,
+   "t1": 34.4,
+   "alpha": true,
+   "depth": "behind_speaker",
+   "bg_dim": 0.46,
+   "title": "ДОЛЛАР & ТЕҢГЕ",
+   "subtitle": "ҚАРЖЫЛЫҚ СЕРПІЛІС",
+   "sfx": "whoosh"
+  },
+  {
+   "id": "hook_b6_frazix_dossier",
+   "kind": "overlay",
+   "preset": "frazix_dossier_hook",
+   "t0": 40.4,
+   "t1": 44.8,
+   "alpha": true,
+   "depth": "behind_speaker",
+   "bg_dim": 0.48,
+   "title": "ФАКТ №06",
+   "subtitle": "ҚЫМБАТ ЕКЕН...",
+   "sfx": "pop"
+  },
+  {
+   "id": "hook_b7_retro_terminal",
+   "kind": "overlay",
+   "preset": "retro_terminal_decrypt",
+   "t0": 48.81,
+   "t1": 51.8,
+   "alpha": true,
+   "depth": "in_front",
+   "opacity": 0.94,
+   "title": "ЖОҚШЫЛЫҚТАН СТРАХ",
+   "subtitle": "CODE: KZ-160M // UNLOCKED",
+   "sfx": "glitch"
+  },
+  {
+   "id": "var_a_frazix_dossier_hook",
+   "kind": "overlay",
+   "preset": "frazix_dossier_hook",
+   "t0": 6.05,
+   "t1": 9.2,
+   "title": "МЕН СОНЫ ХАБАРЛАСАМ ОСЫЛ",
+   "alpha": true,
+   "depth": "behind_speaker",
+   "trans": "cut",
+   "overlay": {
+    "src": "hooks_rendered/var_a_frazix_dossier_hook.mov"
+   }
+  }
+ ],
+ "text": [
+  {
+   "font": "impact",
+   "word_fonts": [
+    "tech",
+    "impact"
+   ],
+   "caption_format": "asymmetric_bento_stack",
+   "text": "160 МИЛЛИОН",
+   "t0": -0.35,
+   "t1": 0.55,
+   "x": 540,
+   "y": 1280,
+   "size": 88,
+   "color": "#FFD600",
+   "anim": "rise",
+   "glow": true,
+   "fadeout": true
+  },
+  {
+   "font": "clean",
+   "word_fonts": null,
+   "caption_format": "word_by_word_pop",
+   "text": "күніне",
+   "t0": 0.513,
+   "t1": 0.813,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#FFD600",
+   "wt": [
+    0.513
+   ],
+   "anim": "word_pop",
+   "glow": true,
+   "glow_color": "#FFD600",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "tech",
+   "caption_format": "slot_machine_counter",
+   "text": "160",
+   "t0": 0.813,
+   "t1": 1.313,
+   "x": 540,
+   "y": 1276,
+   "size": 99,
+   "color": "#00E676",
+   "anim": "slot",
+   "counter": [
+    0.813,
+    1.253,
+    0,
+    160,
+    ""
+   ],
+   "glow": true,
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "caption_format": "tilted_pill_badge",
+   "text": "миллион",
+   "t0": 1.313,
+   "t1": 1.613,
+   "x": 540,
+   "y": 1290,
+   "size": 69,
+   "color": "#FFFFFF",
+   "pill": "#2F3E2E",
+   "tilt": -4.0,
+   "anim": "pop",
+   "sfx": "pop",
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "caption_format": "split_left_right_dialogue",
+   "text": "тауып",
+   "t0": 1.613,
+   "t1": 3.013,
+   "x": 390,
+   "y": 1244,
+   "size": 66,
+   "color": "#EDE6DE",
+   "anim": "pop",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "caption_format": "split_left_right_dialogue",
+   "text": "ЖАТТЫ",
+   "t0": 1.913,
+   "t1": 3.013,
+   "x": 690,
+   "y": 1336,
+   "size": 79,
+   "color": "#00E676",
+   "anim": "pop",
+   "glow": true,
+   "fadeout": false
+  },
+  {
+   "font": "tech",
+   "caption_format": "whisper_glitch_box",
+   "text": "тапты ма бір",
+   "t0": 3.013,
+   "t1": 4.583,
+   "x": 540,
+   "y": 1290,
+   "size": 56,
+   "color": "#EDE6DE",
+   "highlight_color": "#00E676",
+   "anim": "glitch",
+   "pill": "#0B0B0B",
+   "pill_radius": 0.18,
+   "pill_opacity": 0.92,
+   "barcode": true,
+   "sfx": "glitch",
+   "fadeout": false
+  },
+  {
+   "font": "tech",
+   "caption_format": "whisper_glitch_box",
+   "text": "түсінген жоқ",
+   "t0": 4.713,
+   "t1": 5.313,
+   "x": 540,
+   "y": 1290,
+   "size": 56,
+   "color": "#EDE6DE",
+   "highlight_color": "#00E676",
+   "anim": "glitch",
+   "pill": "#0B0B0B",
+   "pill_radius": 0.18,
+   "pill_opacity": 0.92,
+   "barcode": true,
+   "sfx": "glitch",
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "caption_format": "asymmetric_bento_stack",
+   "text": "ӨЗДЕРІ",
+   "t0": 13.913,
+   "t1": 17.713,
+   "x": 430,
+   "y": 1182,
+   "size": 95,
+   "color": "#FFD600",
+   "anim": "rise",
+   "glow": true,
+   "shadow": true,
+   "fadeout": true
+  },
+  {
+   "font": "clean",
+   "caption_format": "asymmetric_bento_stack",
+   "text": "шок",
+   "t0": 14.313,
+   "t1": 17.713,
+   "x": 580,
+   "y": 1290,
+   "size": 76,
+   "color": "#FFFFFF",
+   "anim": "rise",
+   "glow": false,
+   "shadow": true,
+   "fadeout": true
+  },
+  {
+   "font": "editorial",
+   "caption_format": "asymmetric_bento_stack",
+   "text": "феноменальды",
+   "t0": 16.813,
+   "t1": 17.713,
+   "x": 470,
+   "y": 1382,
+   "size": 63,
+   "color": "#EDE6DE",
+   "anim": "rise",
+   "glow": false,
+   "shadow": true,
+   "fadeout": true
+  },
+  {
+   "font": "impact",
+   "caption_format": "behind_head_giant",
+   "text": "ТҮРДЕ ДЕП",
+   "t0": 17.713,
+   "t1": 18.463,
+   "x": 540,
+   "y": 560,
+   "size": 235,
+   "color": "#EDE6DE",
+   "behind": true,
+   "anim": "rise",
+   "glow": false,
+   "fadeout": true
+  },
+  {
+   "font": "clean",
+   "word_fonts": [
+    "editorial",
+    "clean"
+   ],
+   "caption_format": "word_by_word_pop",
+   "text": "тұр ғой",
+   "t0": 18.213,
+   "t1": 19.433,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#00E676",
+   "wt": [
+    18.213,
+    18.613
+   ],
+   "anim": "word_pop",
+   "glow": true,
+   "glow_color": "#00E676",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "tech",
+   "caption_format": "slot_machine_counter",
+   "text": "160",
+   "t0": 19.813,
+   "t1": 20.313,
+   "x": 540,
+   "y": 1276,
+   "size": 99,
+   "color": "#00E676",
+   "anim": "slot",
+   "counter": [
+    19.813,
+    20.253,
+    0,
+    160,
+    ""
+   ],
+   "glow": true,
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "caption_format": "tilted_pill_badge",
+   "text": "миллион",
+   "t0": 20.313,
+   "t1": 20.613,
+   "x": 540,
+   "y": 1290,
+   "size": 69,
+   "color": "#FFFFFF",
+   "pill": "#2F3E2E",
+   "tilt": 3.5,
+   "anim": "pop",
+   "sfx": "pop",
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "caption_format": "split_left_right_dialogue",
+   "text": "күніне",
+   "t0": 20.613,
+   "t1": 23.513,
+   "x": 390,
+   "y": 1244,
+   "size": 66,
+   "color": "#EDE6DE",
+   "anim": "pop",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "caption_format": "split_left_right_dialogue",
+   "text": "ОЛ 160",
+   "t0": 22.613,
+   "t1": 23.513,
+   "x": 690,
+   "y": 1336,
+   "size": 79,
+   "color": "#FFD600",
+   "anim": "pop",
+   "glow": true,
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "word_fonts": null,
+   "caption_format": "graffiti_underline_strike",
+   "text": "миллион",
+   "t0": 23.513,
+   "t1": 23.813,
+   "x": 540,
+   "y": 1290,
+   "size": 76,
+   "color": "#FFFFFF",
+   "underline": "red",
+   "anim": "pop",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "word_fonts": [
+    "clean",
+    "impact",
+    "editorial"
+   ],
+   "caption_format": "word_by_word_pop",
+   "text": "деген қандай болады?",
+   "t0": 23.813,
+   "t1": 25.313,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#FFD600",
+   "wt": [
+    23.813,
+    24.013,
+    24.413
+   ],
+   "anim": "word_pop",
+   "glow": false,
+   "glow_color": "#FFD600",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "word_fonts": [
+    "clean",
+    "clean",
+    "editorial"
+   ],
+   "caption_format": "graffiti_underline_strike",
+   "text": "вообще мен білмеймін",
+   "t0": 25.313,
+   "t1": 26.113,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#00E676",
+   "wt": [
+    25.313,
+    25.613,
+    25.713
+   ],
+   "underline": "red",
+   "anim": "word_pop",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "word_fonts": [
+    "clean",
+    "clean",
+    "clean",
+    "editorial"
+   ],
+   "caption_format": "word_by_word_pop",
+   "text": "оны не алуға болады",
+   "t0": 26.113,
+   "t1": 28.113,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#FFD600",
+   "wt": [
+    26.113,
+    27.113,
+    27.463,
+    27.813
+   ],
+   "anim": "word_pop",
+   "glow": false,
+   "glow_color": "#FFD600",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "caption_format": "split_left_right_dialogue",
+   "text": "оған",
+   "t0": 28.113,
+   "t1": 29.533,
+   "x": 390,
+   "y": 1244,
+   "size": 66,
+   "color": "#EDE6DE",
+   "anim": "pop",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "caption_format": "split_left_right_dialogue",
+   "text": "НЕ КЕЛЕДІ?",
+   "t0": 28.313,
+   "t1": 29.533,
+   "x": 690,
+   "y": 1336,
+   "size": 79,
+   "color": "#00E676",
+   "anim": "pop",
+   "glow": true,
+   "fadeout": false
+  },
+  {
+   "font": "tech",
+   "caption_format": "whisper_glitch_box",
+   "text": "қазірде доллар",
+   "t0": 33.313,
+   "t1": 34.313,
+   "x": 540,
+   "y": 1290,
+   "size": 56,
+   "color": "#EDE6DE",
+   "highlight_color": "#00E676",
+   "anim": "glitch",
+   "pill": "#0B0B0B",
+   "pill_radius": 0.18,
+   "pill_opacity": 0.92,
+   "barcode": true,
+   "sfx": "glitch",
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "word_fonts": [
+    "clean",
+    "editorial",
+    "clean"
+   ],
+   "caption_format": "graffiti_underline_strike",
+   "text": "мен басқа елдің",
+   "t0": 34.313,
+   "t1": 36.413,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#00E676",
+   "wt": [
+    34.313,
+    35.513,
+    36.013
+   ],
+   "underline": "red",
+   "anim": "word_pop",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "word_fonts": [
+    "editorial",
+    "clean",
+    "clean"
+   ],
+   "caption_format": "word_by_word_pop",
+   "text": "ақшасы мен айтсаң",
+   "t0": 36.413,
+   "t1": 37.313,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#FFD600",
+   "wt": [
+    36.413,
+    36.813,
+    36.913
+   ],
+   "anim": "word_pop",
+   "glow": false,
+   "glow_color": "#FFD600",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "word_fonts": [
+    "clean",
+    "editorial"
+   ],
+   "caption_format": "word_by_word_pop",
+   "text": "теңгеге шаққанда",
+   "t0": 37.313,
+   "t1": 38.313,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#00E676",
+   "wt": [
+    37.313,
+    37.813
+   ],
+   "anim": "word_pop",
+   "glow": true,
+   "glow_color": "#00E676",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "caption_format": "split_left_right_dialogue",
+   "text": "қанша",
+   "t0": 38.313,
+   "t1": 39.833,
+   "x": 390,
+   "y": 1244,
+   "size": 66,
+   "color": "#EDE6DE",
+   "anim": "pop",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "caption_format": "split_left_right_dialogue",
+   "text": "ДЕЙМІН ДА",
+   "t0": 38.613,
+   "t1": 39.833,
+   "x": 690,
+   "y": 1336,
+   "size": 79,
+   "color": "#FFD600",
+   "anim": "pop",
+   "glow": true,
+   "fadeout": false
+  },
+  {
+   "font": "tech",
+   "caption_format": "whisper_glitch_box",
+   "text": "теңгеге шақпай",
+   "t0": 42.913,
+   "t1": 43.813,
+   "x": 540,
+   "y": 1290,
+   "size": 56,
+   "color": "#EDE6DE",
+   "highlight_color": "#00E676",
+   "anim": "glitch",
+   "pill": "#0B0B0B",
+   "pill_radius": 0.18,
+   "pill_opacity": 0.92,
+   "barcode": true,
+   "sfx": "glitch",
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "word_fonts": [
+    "clean",
+    "editorial",
+    "clean"
+   ],
+   "caption_format": "word_by_word_pop",
+   "text": "сол қанша сол",
+   "t0": 43.813,
+   "t1": 45.013,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#FFD600",
+   "wt": [
+    43.813,
+    44.013,
+    44.813
+   ],
+   "anim": "word_pop",
+   "glow": true,
+   "glow_color": "#FFD600",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "word_fonts": [
+    "editorial",
+    "clean"
+   ],
+   "caption_format": "word_by_word_pop",
+   "text": "осындай десе",
+   "t0": 45.013,
+   "t1": 46.033,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#00E676",
+   "wt": [
+    45.013,
+    45.413
+   ],
+   "anim": "word_pop",
+   "glow": false,
+   "glow_color": "#00E676",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "tech",
+   "caption_format": "whisper_glitch_box",
+   "text": "қымбат екен деп жатыр",
+   "t0": 46.213,
+   "t1": 47.613,
+   "x": 540,
+   "y": 1290,
+   "size": 56,
+   "color": "#EDE6DE",
+   "highlight_color": "#00E676",
+   "anim": "glitch",
+   "pill": "#0B0B0B",
+   "pill_radius": 0.18,
+   "pill_opacity": 0.92,
+   "barcode": true,
+   "sfx": "glitch",
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "caption_format": "split_left_right_dialogue",
+   "text": "сөйтем",
+   "t0": 47.613,
+   "t1": 49.213,
+   "x": 390,
+   "y": 1244,
+   "size": 66,
+   "color": "#EDE6DE",
+   "anim": "pop",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "caption_format": "split_left_right_dialogue",
+   "text": "СТРАХ",
+   "t0": 48.813,
+   "t1": 49.213,
+   "x": 690,
+   "y": 1336,
+   "size": 79,
+   "color": "#00E676",
+   "anim": "pop",
+   "glow": true,
+   "fadeout": false
+  },
+  {
+   "font": "clean",
+   "word_fonts": null,
+   "caption_format": "word_by_word_pop",
+   "text": "бар",
+   "t0": 49.213,
+   "t1": 50.233,
+   "x": 540,
+   "y": 1290,
+   "size": 72,
+   "color": "#FFFFFF",
+   "highlight_color": "#FFD600",
+   "wt": [
+    49.213
+   ],
+   "anim": "word_pop",
+   "glow": false,
+   "glow_color": "#FFD600",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "word_fonts": [
+    "clean",
+    "editorial",
+    "impact"
+   ],
+   "caption_format": "graffiti_underline_strike",
+   "text": "жоқшылықтан страх бар",
+   "t0": 51.7,
+   "t1": 53.5,
+   "x": 540,
+   "y": 1290,
+   "size": 68,
+   "color": "#FFFFFF",
+   "underline": "yellow",
+   "anim": "pop",
+   "shadow": true,
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "word_fonts": [
+    "clean",
+    "editorial",
+    "clean",
+    "impact"
+   ],
+   "caption_format": "tilted_pill_badge",
+   "text": "пікірге «миллиард» деп жаз",
+   "t0": 49.9,
+   "t1": 53.5,
+   "x": 540,
+   "y": 1435,
+   "size": 48,
+   "color": "#FFFFFF",
+   "pill": "#2F3E2E",
+   "tilt": -3.5,
+   "anim": "pop",
+   "sfx": "pop",
+   "fadeout": false
+  },
+  {
+   "font": "impact",
+   "text": "МЕН СОНЫ ХАБАРЛАСАМ ОСЫЛАЙ БОЛУ КЕРЕК ПА ДЕЙМІН ",
+   "t0": 6.0,
+   "t1": 13.9,
+   "x": 540,
+   "y": 1280,
+   "size": 78,
+   "behind": false,
+   "caption_format": "graffiti_underline_strike",
+   "anim": "rise",
+   "tilt": 0,
+   "pill": null,
+   "underline": "yellow",
+   "barcode": false,
+   "color": "#FFD600"
+  }
+ ],
+ "look": {
+  "halftone_opacity": 16,
+  "vignette": 42,
+  "grain": 4
+ },
+ "keyframes": [
+  {
+   "beat": 1,
+   "t0": 0.0,
+   "t1": 6.0,
+   "preset": "opus_bento_grid_stats",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "zoom_push",
+     "t0": 0.0,
+     "t1": 6.0,
+     "from": 1.0,
+     "to": 1.1
+    },
+    {
+     "layer": "depth",
+     "effect": "matte_backsplash",
+     "t0": 0.0,
+     "t1": 6.0
+    },
+    {
+     "layer": "graphic",
+     "preset": "opus_bento_grid_stats",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 0.0,
+     "t1": 6.0
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 0.0,
+     "t1": 6.0
+    }
+   ]
+  },
+  {
+   "beat": 2,
+   "t0": 6.0,
+   "t1": 13.9,
+   "preset": "graffiti_circle_callout",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "smooth_pan",
+     "t0": 6.0,
+     "t1": 13.9,
+     "pan_px": -22
+    },
+    {
+     "layer": "depth",
+     "effect": "halftone_drift",
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "graphic",
+     "preset": "graffiti_circle_callout",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 6.0,
+     "t1": 13.9
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 6.0,
+     "t1": 13.9
+    }
+   ]
+  },
+  {
+   "beat": 3,
+   "t0": 13.9,
+   "t1": 19.8,
+   "preset": "pixelfx_energy_shader",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "micro_shake",
+     "t0": 13.9,
+     "t1": 19.8,
+     "amp_px": 6,
+     "dur": 0.24
+    },
+    {
+     "layer": "depth",
+     "effect": "matte_backsplash",
+     "t0": 13.9,
+     "t1": 19.8
+    },
+    {
+     "layer": "graphic",
+     "preset": "pixelfx_energy_shader",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 13.9,
+     "t1": 19.8
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 13.9,
+     "t1": 19.8
+    }
+   ]
+  },
+  {
+   "beat": 4,
+   "t0": 19.8,
+   "t1": 29.2,
+   "preset": "split_60_40_simulation",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "snap_punch",
+     "t0": 19.8,
+     "t1": 29.2,
+     "pan_px": -22
+    },
+    {
+     "layer": "depth",
+     "effect": "halftone_drift",
+     "t0": 19.8,
+     "t1": 29.2
+    },
+    {
+     "layer": "graphic",
+     "preset": "split_60_40_simulation",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 19.8,
+     "t1": 29.2
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 19.8,
+     "t1": 29.2
+    }
+   ]
+  },
+  {
+   "beat": 5,
+   "t0": 29.2,
+   "t1": 39.6,
+   "preset": "threejs_3d_floating_totem",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "zoom_push",
+     "t0": 29.2,
+     "t1": 39.6,
+     "pan_px": 22
+    },
+    {
+     "layer": "depth",
+     "effect": "matte_backsplash",
+     "t0": 29.2,
+     "t1": 39.6
+    },
+    {
+     "layer": "graphic",
+     "preset": "threejs_3d_floating_totem",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 29.2,
+     "t1": 39.6
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 29.2,
+     "t1": 39.6
+    }
+   ]
+  },
+  {
+   "beat": 6,
+   "t0": 39.6,
+   "t1": 48.8,
+   "preset": "frazix_dossier_hook",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "smooth_pan",
+     "t0": 39.6,
+     "t1": 48.8,
+     "from": 1.0,
+     "to": 1.1
+    },
+    {
+     "layer": "depth",
+     "effect": "halftone_drift",
+     "t0": 39.6,
+     "t1": 48.8
+    },
+    {
+     "layer": "graphic",
+     "preset": "frazix_dossier_hook",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 39.6,
+     "t1": 48.8
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 39.6,
+     "t1": 48.8
+    }
+   ]
+  },
+  {
+   "beat": 7,
+   "t0": 48.8,
+   "t1": 53.5,
+   "preset": "retro_terminal_decrypt",
+   "animations": [
+    {
+     "layer": "camera",
+     "effect": "micro_shake",
+     "t0": 48.8,
+     "t1": 53.5,
+     "amp_px": 6,
+     "dur": 0.24
+    },
+    {
+     "layer": "depth",
+     "effect": "matte_backsplash",
+     "t0": 48.8,
+     "t1": 53.5
+    },
+    {
+     "layer": "graphic",
+     "preset": "retro_terminal_decrypt",
+     "spring": {
+      "stiffness": 220,
+      "damping": 18
+     },
+     "t0": 48.8,
+     "t1": 53.5
+    },
+    {
+     "layer": "type_audio",
+     "caption_format": "word_by_word_pop",
+     "sfx": "pop",
+     "t0": 48.8,
+     "t1": 53.5
+    }
+   ]
+  }
+ ],
+ "project_dir": "C:\\Users\\Artur\\Gmotion\\projects\\reel_MDCrs6R_Epg"
+}

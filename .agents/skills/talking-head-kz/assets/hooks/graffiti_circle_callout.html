@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+<title>10. graffiti_circle_callout</title>
+<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<script src="_hook_core.js"></script>
+</head>
+<body>
+<canvas id="stage" width="1080" height="1920"></canvas>
+<script>
+// Hand-drawn graffiti oval callout (oval_red.png / oval_cyan.png) + animated yellow underline wipe
+HookCore.initStage((ctx, t, imgs, cfg) => {
+  const { W, clamp, seg, springPhys, envelope, drawAsset } = HookCore;
+  const { alpha } = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+
+  const drawProg = clamp(seg(t, 0.06, 0.55));
+  const sp = springPhys(t, 220, 18);
+  const cx = W / 2, cy = 410;
+  const kw = (cfg.title || 'ОСЫ БІР СӨЗ').toUpperCase();
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Clipped progressive reveal simulating brush stroke circle
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.arc(cx, cy, 480, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * drawProg);
+  ctx.closePath();
+  ctx.clip();
+  const useCyan = /теңге|доллар|ақша|курс/i.test(kw);
+  drawAsset(ctx, useCyan ? imgs.ovalCyan : imgs.ovalRed, cx, cy, 690 * (0.93 + 0.07 * sp), 0, 0.96, -0.04);
+  ctx.restore();
+
+  // Key text inside callout ring
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.shadowColor = 'rgba(0,0,0,0.9)';
+  ctx.shadowBlur = 16;
+  ctx.font = '900 56px "Unbounded", "Montserrat", sans-serif';
+  ctx.fillText(kw.slice(0, 18), cx, cy + 12);
+
+  // Left-to-right animated yellow graffiti underline below text
+  const ulProg = clamp(seg(t, 0.25, 0.72));
+  if (ulProg > 0.01) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(cx - 280, cy + 28, 560 * ulProg, 110);
+    ctx.clip();
+    drawAsset(ctx, imgs.ulYellow, cx, cy + 72, 520, 0, 0.95);
+    ctx.restore();
+  }
+  ctx.restore();
+}, {
+  ovalRed: '../graffiti/oval_red.png',
+  ovalCyan: '../graffiti/oval_cyan.png',
+  ulYellow: '../graffiti/underline_yellow.png',
+});
+</script>
+</body>
+</html>

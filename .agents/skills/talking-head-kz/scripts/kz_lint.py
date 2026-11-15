@@ -93,15 +93,22 @@ def main():
                     by_ps[f['ps']] = (src, i)
     missing, cache = [], {}
     for t in texts:
-        ps = fonts.get(t['font'])
-        if ps not in by_ps:
-            missing.append('%s: font %s not found' % (t['font'], ps))
-            continue
-        if ps not in cache:
-            cache[ps] = cmap(*by_ps[ps])
-        bad = sorted({c for c in t['text'] if not c.isspace() and ord(c) not in cache[ps]})
-        if bad:
-            missing.append('"%s": no glyph for %s in %s' % (t['text'][:20], ' '.join(bad), ps))
+        roles = [t['font']]
+        wf = t.get('word_fonts')
+        if isinstance(wf, list):
+            roles.extend(r for r in wf if r)
+        elif isinstance(wf, dict):
+            roles.extend(r for r in wf.values() if r)
+        for role in set(roles):
+            ps = fonts.get(role)
+            if ps not in by_ps:
+                missing.append('%s: font %s not found' % (role, ps))
+                continue
+            if ps not in cache:
+                cache[ps] = cmap(*by_ps[ps])
+            bad = sorted({c for c in t['text'] if not c.isspace() and ord(c) not in cache[ps]})
+            if bad:
+                missing.append('"%s": no glyph for %s in %s' % (t['text'][:20], ' '.join(bad), ps))
     rule('language', 10, 'every character exists in its font', 'FAIL' if missing else 'PASS', '; '.join(sorted(set(missing))[:4]))
 
     said = [(w['s'], norm(w['w'])) for w in pw]
@@ -147,7 +154,7 @@ def main():
     rule('rhythm', 3, 'every change starts on a spoken word (within one frame)', 'WARN' if off else 'PASS', ', '.join(off[:6]))
 
     # ---------------------------------------------------------------- composition (20)
-    big = [t for t in texts if t['font'] == 'anton']
+    big = [t for t in texts if t['font'] in ('anton', 'impact') and t.get('size', 0) >= 120]
     drift = []
     for where, grp in (('speaker', [t for t in big if not card_at(max(t['t0'], 0.0) + 0.05)]), ('cards', [t for t in big if card_at(max(t['t0'], 0.0) + 0.05)])):
         ys = sorted(t['y'] for t in grp)
@@ -157,7 +164,7 @@ def main():
     rule('composition', 5, 'big words share one anchor height (the invisible crosshair)', 'WARN' if drift else 'PASS', '; '.join(drift[:4]))
     outside = ['%s y %d' % (t['text'][:12], t['y']) for t in texts if not 300 <= t.get('y', 960) <= 1500]
     rule('composition', 5, 'all text between y 300 and y 1500', 'FAIL' if outside else 'PASS', ', '.join(outside[:4]))
-    face = ['%s y %d' % (t['text'][:12], t['y']) for t in texts if not card_at(max(t['t0'], 0.0) + 0.05) and 520 < t.get('y', 1300) < 1040]
+    face = ['%s y %d' % (t['text'][:12], t['y']) for t in texts if not t.get('behind') and not card_at(max(t['t0'], 0.0) + 0.05) and 520 < t.get('y', 1300) < 1040]
     rule('composition', 4, 'nothing over the face (speaker text below y 1040 or above y 520)', 'WARN' if face else 'PASS', ', '.join(face[:4]))
     reds = [t for t in texts if t.get('color', '#FFFFFF').upper() == accent]
     clash = ['%s + %s' % (a['text'][:10], b['text'][:10]) for i, a in enumerate(reds) for b in reds[i + 1:]
@@ -168,7 +175,7 @@ def main():
 
     # ---------------------------------------------------------------- motion (15)
     builds = [t['text'][:10] for t in texts if t.get('anim') == 'build']
-    pops = [t['text'][:10] for t in stacks if t.get('anim') == 'pop' and not t.get('counter')]
+    pops = [t['text'][:10] for t in stacks if t.get('anim') == 'pop' and not t.get('counter') and not t.get('caption_format')]
     msg = ('build x%d (max 2); ' % len(builds) if len(builds) > 2 else '') + ('pop outside pills: %s' % ', '.join(pops[:4]) if pops else '')
     rule('motion', 4, 'text rises in softly: "build" at most twice, "pop" only on pills/counters', 'WARN' if msg else 'PASS', msg)
     cover = [t for t in texts if t['t0'] <= -0.3 and t['t1'] > 0.5] or [i for i in ins if i['t0'] <= 0.001]

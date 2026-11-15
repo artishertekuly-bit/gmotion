@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+<title>7. pixelfx_energy_shader</title>
+<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<script src="_hook_core.js"></script>
+</head>
+<body>
+<canvas id="stage" width="1080" height="1920"></canvas>
+<script>
+// pixelfx procedural lightning strike (3-pulse flicker [1,0.72,0.3,0.95,0.5,0.8,0.22]) + 4x4 Bayer ordered dither + ballistic sparks
+HookCore.initStage((ctx, t, imgs, cfg) => {
+  const { W, H, clamp, springPhys, mulberry32, envelope, drawAsset } = HookCore;
+  const { alpha } = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+
+  const flicker = [1, 0.72, 0.3, 0.95, 0.5, 0.8, 0.22];
+  const fIdx = Math.floor(t * 24) % flicker.length;
+  const flash = flicker[fIdx];
+  const sp = springPhys(t, 220, 18);
+
+  // 4x4 Bayer ordered dither energy band upper half
+  const bayer4 = [
+    0, 8, 2, 10,
+    12, 4, 14, 6,
+    3, 11, 1, 9,
+    15, 7, 13, 5,
+  ];
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.42;
+  const cell = 14;
+  for (let y = 160; y < 740; y += cell) {
+    const grad = Math.sin((y - 160) / 580 * Math.PI);
+    for (let x = 80; x < 1000; x += cell) {
+      const bi = ((Math.floor(x / cell) & 3) + ((Math.floor(y / cell) & 3) << 2));
+      const thresh = bayer4[bi] / 16;
+      const dist = Math.hypot(x - W / 2, y - 420) / 480;
+      if (grad * (1 - dist) * flash > thresh * 0.85) {
+        ctx.fillStyle = (x + y) % 28 === 0 ? cfg.accent : cfg.danger;
+        ctx.fillRect(x, y, cell - 4, cell - 4);
+      }
+    }
+  }
+
+  // Stepped zigzag lightning strike
+  const rng = mulberry32(99 + Math.floor(t * 8));
+  ctx.globalAlpha = clamp(flash * alpha * sp);
+  ctx.strokeStyle = cfg.accent;
+  ctx.lineWidth = 6;
+  ctx.shadowColor = cfg.danger;
+  ctx.shadowBlur = 18;
+  for (const sx of [240, 840]) {
+    ctx.beginPath();
+    let px = sx, py = 120;
+    ctx.moveTo(px, py);
+    for (let s = 0; s < 8; s++) {
+      px += (rng() - 0.5) * 90;
+      py += 75;
+      ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+
+  // Ballistic closed-form sparks (fly with drag k & gravity g)
+  const srng = mulberry32(777);
+  for (let i = 0; i < 24; i++) {
+    const vx = (srng() - 0.5) * 620;
+    const vy = -180 - srng() * 380;
+    const drag = 1 - Math.exp(-2.2 * t);
+    const sx = W / 2 + (vx / 2.2) * drag;
+    const sy = 500 + (vy / 2.2) * drag + 0.5 * 460 * t * t;
+    if (sy > 0 && sy < 900) {
+      drawAsset(ctx, imgs.sparkle, sx, sy, 26, 0, clamp(1 - t / cfg.dur) * alpha, t * 4 + i);
+    }
+  }
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 54px "Unbounded", "Montserrat", sans-serif';
+  ctx.fillText((cfg.title || 'КҮШТІ ИНСАЙТ').toUpperCase().slice(0, 18), W / 2, 245);
+  ctx.restore();
+}, {
+  sparkle: '../frazix/frazix_sparkle_red.png',
+});
+</script>
+</body>
+</html>

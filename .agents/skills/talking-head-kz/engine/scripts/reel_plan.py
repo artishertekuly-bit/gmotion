@@ -7,9 +7,18 @@ insert timing (adjacency, transition entry, split blocks), subtitle word timing 
 """
 import json
 import os
+import sys
+
+_SKILL_SCRIPTS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'scripts')
+if os.path.isdir(_SKILL_SCRIPTS):
+    sys.path.insert(0, _SKILL_SCRIPTS)
 
 from common import die, find_ffmpeg, load_json, probe
 import textass
+try:
+    from hook_registry import HOOK_CATALOG  # noqa: E402
+except Exception:
+    HOOK_CATALOG = {}
 
 KNOWN_KINDS = ('full', 'frame', 'band', 'vsplit', 'logo_flash', 'cards', 'bar', 'converge', 'number', 'solid', 'cutout', 'pframe', 'overlay')
 TD = 0.22                                                  # whip / zoom entry time
@@ -96,6 +105,11 @@ def build_plan(edl_path):
 
     inserts = sorted(edl.get('inserts', []), key=lambda i: i['t0'])
     for I in inserts:
+        if I.get('preset') and I['preset'] in HOOK_CATALOG:
+            I.setdefault('depth', HOOK_CATALOG[I['preset']]['depth'])
+            I.setdefault('spring', {'stiffness': 220, 'damping': 18})
+            I.setdefault('kind', 'overlay')
+            I.setdefault('trans', 'cut')
         if I['kind'] not in KNOWN_KINDS:
             die('insert %s: unknown kind %s' % (I['id'], I['kind']))
         I.setdefault('layout', 'full')
@@ -205,7 +219,7 @@ def build_plan(edl_path):
                 return b
         nxt = [a for a, b in iv if a > t]
         return min(nxt) if nxt else dur
-    big = [T for T in texts if T['font'] == 'anton']
+    big = [T for T in texts if T['font'] in ('anton', 'impact') and T.get('size', 0) >= 120]
     for T in big:
         if T.get('keep_t1'):
             continue
@@ -218,8 +232,26 @@ def build_plan(edl_path):
             a_['t1'] = b_['t0']
     accent = edl.get('accent', '#ED3B22')
     for T in texts:
-        T['glow'] = T.get('glow', T['color'].upper() == accent.upper() and T['font'] == 'anton')
+        T['glow'] = T.get('glow', T['color'].upper() == accent.upper() and T['font'] in ('anton', 'impact'))
     texts = [T for T in texts if T['t1'] > T['t0'] + 0.01]
+
+    # Compound Keyframe camera tracks (Layer 1: zoom_push, smooth_pan, micro_shake, snap_punch)
+    camera_keys = []
+    for list_key in ('beats', 'keyframes'):
+        for item in (edl.get(list_key) or []):
+            bt0, bt1 = item.get('t0'), item.get('t1')
+            if bt0 is None or bt1 is None or bt1 <= bt0:
+                continue
+            for anim in (item.get('animations') or []):
+                if anim.get('layer') == 'camera':
+                    camera_keys.append(dict(
+                        t0=float(bt0),
+                        t1=float(bt1),
+                        effect=anim.get('effect', 'zoom_push'),
+                        from_scale=float(anim.get('from', 1.0)),
+                        to_scale=float(anim.get('to', 1.08)),
+                    ))
+    camera_keys.sort(key=lambda k: k['t0'])
 
     look = dict(halftone='assets/halftone_1080x1920.png', halftone_opacity=24, vignette=42, grain=4)
     look.update(edl.get('look') or {})
@@ -233,6 +265,6 @@ def build_plan(edl_path):
     fonts = dict(textass.default_fonts_map(), **(edl.get('fonts') or {}))
     return dict(W=W, H=H, fps=fps, dur=dur, name=name, P=P, presenter=dict(src=psrc, w=sw, h=sh, fps=pinfo['fps'] or fps),
                 mattes=mattes, audio=audio, logos=logos, pieces=pieces(W, H), pieces_half=pieces(W, H // 2, fixed=fr['half']),
-                inserts=inserts, split_blocks=split_blocks, base_keys=base_keys, text=texts, look=look, accent=accent,
+                inserts=inserts, split_blocks=split_blocks, base_keys=base_keys, camera_keys=camera_keys, text=texts, look=look, accent=accent,
                 bw_black=edl.get('bw_black', '#0E0C0E'), bw_white=edl.get('bw_white', '#EDE6DE'), ui_bg=edl.get('ui_bg', '#161216'),
                 fonts=fonts)

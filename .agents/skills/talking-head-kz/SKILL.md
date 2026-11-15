@@ -91,13 +91,17 @@ uses program time (`analysis/program_words.json`).
 1. Decide the ending first: what should the viewer do after the last word (comment a word, save, follow)? The
    reel is planned backwards from that line. Then split the talk into beats (`kz-format.md`, section 8) and write
    them into the EDL as `"beats"`.
-2. Write the EDL from `assets/examples/kz_edl.json`; generate the pill runs:
+2. Write the EDL with **Mastery V2** mechanics (avoid single-effect flat frames):
+   - **12 Hook Presets + Anti-Repeat** (`scripts/hook_registry.py`): choose distinct context-matched `preset` inserts across `frazix_dossier_hook`, `graffiti_fact_explosion`, `threejs_3d_floating_totem`, `lemo_ink_wash_history`, `lemo_isometric_system`, `reanimate_state_morph`, `pixelfx_energy_shader`, `opus_bento_grid_stats`, `halftone_cutout_backsplash`, `graffiti_circle_callout`, `split_60_40_simulation`, `retro_terminal_decrypt`; never repeat consecutive presets.
+   - **Compound Keyframe Density `[2..4]`**: every active beat runs 2–4 layered animations across Camera (`zoom_push` / `smooth_pan` / `micro_shake`), Depth (`matte_backsplash` / `halftone_drift`), Graphic (`spring(k=220, d=18)`), and Type+SFX (`storyboard.py --enrich-edl` & `validate_edl.py` auto-balance `[2..4]`).
+   - **4-Role Font Matrix + Mixed-Font Sentences**: map `impact`, `clean`, `editorial`, `tech` (verified via `font_check.py --roles`) and mix contrasting fonts inline via `"word_fonts": [...]`.
+   - **8 Geometric Subtitle Formats**: generate dynamic subtitles rotating all 8 formats:
    ```bash
-   python -X utf8 K/caption_words.py DIR --from 13.8 --to 16.5 --pill "#2F3E2E" --merge DIR/edl.json
+   python -X utf8 K/caption_words.py DIR --from 0.45 --to 51.65 --mode v2 --merge DIR/edl.json
    ```
-3. Try the hook three ways (start from `assets/examples/kz_hook_variants.json`), look at the sheet, keep the strongest:
+3. Compare V2 variants on any beat cleanly (using `--plan-only` on low-RAM laptops):
    ```bash
-   python -X utf8 K/variants.py DIR/edl.json --options DIR/hook_variants.json --out-dir DIR/qa/variants_hook
+   python -X utf8 K/variants.py DIR/edl.json --beat 1 --auto-v2 --plan-only --out-dir DIR/qa/variants_v2
    ```
 4. Check the plan until it is clean:
    ```bash
@@ -158,19 +162,20 @@ A note that implies a rule ("субтитр үлкенірек") applies everywh
 | `references/kz-format.md` | the format: look, motion rules, Kazakh rules, EDL recipes, sound, hooks, checklist |
 | `references/mastery-7-repos.md` | distilled curves, shaders, springs, 3D camera/particles & UI patterns from 7 repos |
 | `scripts/fetch_to_context.py` | extract YouTube podcast transcript + heatmap into AI Context Window |
-| `scripts/render_hooks_chromium.py` | cloud 60fps SwiftShader Chromium renderer for HTML/Three.js 40% overlays |
-| `assets/hooks/template_hook_3d_morph.html` | deterministic `window.seek(t)` 3D/HUD transparent overlay starter |
+| `scripts/hook_registry.py` | Mastery V2 catalog: 12 hook presets, anti-repeat router, `[2..4]` compound layer builder |
+| `scripts/render_hooks_chromium.py` | cloud 60fps SwiftShader Chromium renderer for all 12 HTML/Canvas/3D overlays (`assets/hooks/*.html`) |
+| `assets/hooks/*.html` | 12 deterministic `window.seek(t)` hook templates (`_hook_core.js` spring physics + local PNG assets) |
 | `assets/examples/kz_edl.json` | a complete Kazakh example EDL (27 s, lint 100/100, rendered and reviewed) |
 | `assets/examples/kz_hook_variants.json` | five hook treatments (A-E) incl. 60/40 depth, `word_pop`, `terminal`, `counter` |
 | `scripts/transcribe_scribe.py` | ElevenLabs Scribe -> `analysis/asr.json` (paid) |
-| `scripts/caption_words.py` | `--mode 60-40` (5 subtitle styles) + classic pill captions with Kazakh particle rule |
-| `scripts/variants.py` | 3-5 treatments of one beat, side by side |
+| `scripts/caption_words.py` | `--mode v2` / `60-40` (8 geometric subtitle formats + mixed `word_fonts`) & classic Kazakh captions |
+| `scripts/variants.py` | 3-5 treatments of one beat (`--auto-v2`, `--plan-only` low-RAM safe) |
 | `scripts/kz_lint.py` | scored self-check of the EDL (language, rhythm, composition, motion, platform) |
-| `scripts/storyboard.py` | numbered storyboard from real stills (+ the plan as a table) |
+| `scripts/storyboard.py` | lightweight storyboard (`--plan-only --enrich-edl` for `[2..4]` stacks) & real stills |
 | `scripts/sfx_from_edl.py` | synthesised cues under the voice, frame-synced; optional music bed |
 | `scripts/review_render.py` | review of the decoded MP4: jumps, frozen stretches, joins, loudness |
 | `scripts/compare_pack.py` | "Кейін / Дейін" side-by-side packaging |
-| `scripts/font_check.py` | does a font file contain every Kazakh letter? |
+| `scripts/font_check.py` | checks Kazakh glyphs + `--roles` 4-role matrix (`impact`/`clean`/`editorial`/`tech`) |
 | `scripts/check_setup_kz.py` | setup check for this PC |
 | `engine/` | the patched talking-head-reels engine and its documents |
 

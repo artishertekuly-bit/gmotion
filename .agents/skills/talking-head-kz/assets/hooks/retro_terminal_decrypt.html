@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+<title>12. retro_terminal_decrypt</title>
+<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<script src="_hook_core.js"></script>
+</head>
+<body>
+<canvas id="stage" width="1080" height="1920"></canvas>
+<script>
+// lemo-opuscar ascii-crt scanlines + chromatic split + deterministic matrix decryption + frazix barcode
+HookCore.initStage((ctx, t, imgs, cfg) => {
+  const { W, clamp, seg, mulberry32, envelope, roundRectPath, drawAsset } = HookCore;
+  const { alpha } = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+
+  const target = (cfg.title || 'ҚҰПИЯ АЛГОРИТМ').toUpperCase();
+  const glyphs = '01#@$%&*ҚҒҢӨҰҮҺІӘ';
+  const decU = clamp(seg(t, 0.15, Math.min(cfg.dur - 0.55, 1.65)));
+  const rng = mulberry32(Math.floor(t * 24) + 55);
+
+  let shown = '';
+  for (let i = 0; i < target.length; i++) {
+    if (target[i] === ' ' || i / Math.max(target.length, 1) <= decU) {
+      shown += target[i];
+    } else {
+      shown += glyphs[Math.floor(rng() * glyphs.length)];
+    }
+  }
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Retro CRT terminal panel in upper zone
+  roundRectPath(ctx, 110, 210, 860, 260, 16);
+  ctx.fillStyle = 'rgba(8, 12, 10, 0.92)';
+  ctx.fill();
+  ctx.strokeStyle = cfg.accent2;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // CRT scanline stripes inside panel
+  ctx.fillStyle = 'rgba(0, 230, 118, 0.06)';
+  for (let sy = 216; sy < 464; sy += 6) {
+    ctx.fillRect(114, sy, 852, 2);
+  }
+
+  // Chromatic aberration split text (amber/red offset + phosphor green core)
+  ctx.font = '800 44px "JetBrains Mono", Consolas, monospace';
+  ctx.fillStyle = 'rgba(237, 59, 34, 0.55)';
+  ctx.fillText('> ' + shown.slice(0, 20), 148, 355);
+  ctx.fillStyle = decU >= 0.99 ? cfg.accent : cfg.accent2;
+  ctx.fillText('> ' + shown.slice(0, 20), 144, 355);
+
+  // Header status + barcode stamp
+  ctx.font = '700 22px "JetBrains Mono", monospace';
+  ctx.fillStyle = 'rgba(237,230,222,0.75)';
+  ctx.fillText(decU >= 0.99 ? '[DECRYPTED · 100%]' : `[DECRYPTING · ${Math.round(decU * 100)}%]`, 148, 268);
+
+  drawAsset(ctx, imgs.barcode, 845, 420, 170, 0, 0.9);
+  ctx.restore();
+}, {
+  barcode: '../frazix/frazix_barcode.png',
+});
+</script>
+</body>
+</html>

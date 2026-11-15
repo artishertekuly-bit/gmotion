@@ -275,6 +275,19 @@ class Renderer:
                 r = sample(ht, self.W, self.H, 0, 0, self.W / ht.shape[1], self.H / ht.shape[0], 0, 0)
                 ht = r[2]
             self.halftone = ht
+        self.fx_png = {}
+        _skill_assets = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'assets')
+        for key, rel in (
+            ('underline_yellow', os.path.join('graffiti', 'underline_yellow.png')),
+            ('underline_red', os.path.join('graffiti', 'underline_red.png')),
+            ('barcode', os.path.join('frazix', 'frazix_barcode.png')),
+        ):
+            fp = os.path.join(_skill_assets, rel)
+            if os.path.exists(fp):
+                try:
+                    self.fx_png[key] = load_rgba(self.ff, fp)
+                except Exception:
+                    pass
         self.ins_text = {}
 
     # --- presenter
@@ -302,6 +315,27 @@ class Renderer:
                 return pc
         return pcs[-1] if t >= pcs[-1]['t1'] else pcs[0]
 
+    def camera_motion(self, t):
+        """Compound Layer-1 camera kinematics: zoom_push (1.0 -> 1.10), smooth_pan, micro_shake, snap_punch."""
+        mul, dx, dy = 1.0, 0.0, 0.0
+        for ck in self.p.get('camera_keys') or ():
+            if ck['t0'] - 1e-6 <= t < ck['t1'] - 1e-6:
+                dt = max(0.0, t - ck['t0'])
+                dur = max(ck['t1'] - ck['t0'], 0.05)
+                u = min(1.0, dt / dur)
+                ef = ck.get('effect', 'zoom_push')
+                if ef == 'zoom_push':
+                    mul *= ck.get('from_scale', 1.0) + (ck.get('to_scale', 1.08) - ck.get('from_scale', 1.0)) * bez(u, 0.55, 0.9)
+                elif ef == 'snap_punch':
+                    mul *= 1.0 + 0.08 * math.exp(-dt * 8.0) * math.cos(dt * 12.0)
+                elif ef == 'smooth_pan':
+                    dx += math.sin(u * math.pi) * 26.0
+                elif ef == 'micro_shake' and dt < 0.36:
+                    damp = math.exp(-dt * 9.0)
+                    dx += 11.0 * damp * math.sin(dt * 42.0)
+                    dy += 8.0 * damp * math.cos(dt * 37.0)
+        return mul, dx, dy
+
     def presenter(self, t, half=False, base=100.0, matte=None, h=None):
         """Presenter (or one of its mattes) at program time t on a canvas W x h. base = punch-in scale %."""
         pcs = self.p['pieces_half'] if half else self.p['pieces']
@@ -309,7 +343,8 @@ class Renderer:
         pc = self.piece(pcs, t)
         u = (t - pc['t0']) / max(pc['t1'] - pc['t0'] - 1.0 / self.fps, 1e-3)
         s = pc['s0'] + (pc['s1'] - pc['s0']) * min(1.0, max(0.0, u))
-        k = base / 100.0
+        cam_mul, cam_dx, cam_dy = (1.0, 0.0, 0.0) if half else self.camera_motion(t)
+        k = (base / 100.0) * cam_mul
         cw, ch, cx, cy = self.crop
         if matte:
             rd, d, mc = self.mattes[matte]
@@ -318,9 +353,9 @@ class Renderer:
         else:
             img = self.pres.frame(t + pc['off'])
             ax, ay, S = pc['ax'] - cx, pc['ay'] - cy, s * k
-        py = h / 2 + k * (pc['y0'] - h / 2)
+        py = h / 2 + k * (pc['y0'] - h / 2) + cam_dy
         canvas = np.zeros((h, self.W) if matte else (h, self.W, 3), np.float32)
-        r = sample(img, self.W, h, ax, ay, S, S, self.W / 2, py)
+        r = sample(img, self.W, h, ax, ay, S, S, self.W / 2 + cam_dx, py)
         if r:
             x0, y0, patch, _ = r
             canvas[y0:y0 + patch.shape[0], x0:x0 + patch.shape[1]] = patch
@@ -807,11 +842,31 @@ class Renderer:
             if I.get('flash') == 'silhouette' and I['t0'] <= t < I['t0'] + 3.0 / self.fps and 'matte_body' in self.p['mattes']:
                 m = self.presenter(t, matte='matte_body')
                 c[:] = m[:, :, None]
+        # Layer 3 caption PNG accents (graffiti underline wipe + whisper glitch barcode)
+        for T in self.p['text']:
+            if not (T['t0'] <= t < T['t1']) or T.get('behind'):
+                continue
+            dt = max(0.0, t - T['t0'])
+            uk = T.get('underline')
+            if uk:
+                png = self.fx_png.get('underline_' + uk) or self.fx_png.get('underline_yellow')
+                if png is not None:
+                    prog = bez(min(1.0, dt / 0.24), 0.7, 0.9)
+                    col_w = max(1, int(png.shape[1] * prog))
+                    target_w = min(W * 0.78, max(240.0, len(T['text']) * T['size'] * 0.48))
+                    sc = target_w / max(png.shape[1], 1)
+                    put(c, png[:, :col_w], png.shape[1] / 2.0, png.shape[0] / 2.0, sc, T['x'], T['y'] + T['size'] * 0.68, opacity=0.92)
+            if T.get('barcode') and 'barcode' in self.fx_png:
+                bp = self.fx_png['barcode']
+                op = 0.85 if dt > 0.18 else (0.25 if int(dt * 40) % 2 else 0.95)
+                sc = min(0.32, 240.0 / max(bp.shape[1], 1))
+                put(c, bp, bp.shape[1] / 2.0, bp.shape[0] / 2.0, sc, T['x'], T['y'] - T['size'] * 1.15, opacity=op)
         if front is not None:
             over(c, front[:, :, :], 0, 0)
         if self.halftone is not None:
-            o = self.p['look'].get('halftone_opacity', 24) / 100.0 * self.halftone[:, :, 3:4]
-            s = self.halftone[:, :, :3]
+            ht_roll = np.roll(self.halftone, int(round(t * 14)) % self.H, axis=0)
+            o = self.p['look'].get('halftone_opacity', 24) / 100.0 * ht_roll[:, :, 3:4]
+            s = ht_roll[:, :, :3]
             ov = np.where(c < 0.5, 2 * c * s, 1 - 2 * (1 - c) * (1 - s))
             c += (ov - c) * o
         c *= (1 - self.vignette[:, :, None])

@@ -22,8 +22,40 @@ import sys
 import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), 'engine', 'scripts'))
+SKILL = os.path.dirname(HERE)
+sys.path.insert(0, os.path.join(SKILL, 'engine', 'scripts'))
+sys.path.insert(0, HERE)
 from common import find_ffmpeg, load_json  # noqa: E402
+from hook_registry import HOOK_CATALOG  # noqa: E402
+
+
+def _to_file_url(p):
+    ap = os.path.abspath(p).replace('\\', '/')
+    return 'file://' + ('' if ap.startswith('/') else '/') + ap
+
+
+def _skill_assets_url_map():
+    """Map short asset keys -> file:// URLs across assets/3d, assets/frazix, assets/graffiti, and halftone."""
+    key_map = {
+        'dossier': os.path.join(SKILL, 'assets', 'frazix', 'frazix_dossier_card.png'),
+        'barcode': os.path.join(SKILL, 'assets', 'frazix', 'frazix_barcode.png'),
+        'dotgrid': os.path.join(SKILL, 'assets', 'frazix', 'frazix_dotgrid.png'),
+        'sparkleGold': os.path.join(SKILL, 'assets', 'frazix', 'frazix_sparkle_gold.png'),
+        'sparkleRed': os.path.join(SKILL, 'assets', 'frazix', 'frazix_sparkle_red.png'),
+        'sparkle': os.path.join(SKILL, 'assets', 'frazix', 'frazix_sparkle_gold.png'),
+        'card': os.path.join(SKILL, 'assets', '3d', 'card_3d_bakyt.png'),
+        'compass': os.path.join(SKILL, 'assets', '3d', 'compass_3d_gold.png'),
+        'fakt': os.path.join(SKILL, 'assets', 'graffiti', 'badge_fakt.png'),
+        'erezhe': os.path.join(SKILL, 'assets', 'graffiti', 'badge_erezhe.png'),
+        'torn': os.path.join(SKILL, 'assets', 'graffiti', 'torn_paper_strip.png'),
+        'arrow': os.path.join(SKILL, 'assets', 'graffiti', 'arrow_red_loop.png'),
+        'ovalRed': os.path.join(SKILL, 'assets', 'graffiti', 'oval_red.png'),
+        'ovalCyan': os.path.join(SKILL, 'assets', 'graffiti', 'oval_cyan.png'),
+        'ulYellow': os.path.join(SKILL, 'assets', 'graffiti', 'underline_yellow.png'),
+        'ulRed': os.path.join(SKILL, 'assets', 'graffiti', 'underline_red.png'),
+        'halftone': os.path.join(SKILL, 'engine', 'assets', 'textures', 'halftone_1080x1920.png'),
+    }
+    return {k: _to_file_url(v) for k, v in key_map.items() if os.path.exists(v)}
 
 
 def system_ram_gb():
@@ -54,7 +86,7 @@ def system_ram_gb():
     return 16.0
 
 
-def render_html_to_video(html_path, out_path, dur, fps=60, width=1080, height=1920, alpha=True):
+def render_html_to_video(html_path, out_path, dur, fps=60, width=1080, height=1920, alpha=True, params=None):
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -62,9 +94,11 @@ def render_html_to_video(html_path, out_path, dur, fps=60, width=1080, height=19
 
     ff = find_ffmpeg()
     n_frames = max(1, int(round(dur * fps)))
-    abs_html = os.path.abspath(html_path)
-    url = 'file://' + ('/' if not abs_html.startswith('/') else '') + abs_html.replace('\\', '/')
+    url = _to_file_url(html_path)
     os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
+    hook_params = dict(params or {})
+    hook_params.setdefault('dur', float(dur))
+    hook_params['assets'] = dict(_skill_assets_url_map(), **(hook_params.get('assets') or {}))
 
     with tempfile.TemporaryDirectory(prefix='hk_') as tmp:
         with sync_playwright() as pw:
@@ -79,8 +113,9 @@ def render_html_to_video(html_path, out_path, dur, fps=60, width=1080, height=19
                 ],
             )
             page = browser.new_page(viewport={'width': width, 'height': height}, device_scale_factor=1)
+            page.add_init_script(f'window.__HOOK_PARAMS__ = {json.dumps(hook_params, ensure_ascii=False)};')
             page.goto(url, wait_until='networkidle')
-            page.evaluate('() => document.fonts.ready')
+            page.evaluate('() => Promise.all([document.fonts.ready, window.__HOOK_ASSETS_READY__ || Promise.resolve()])')
 
             for k in range(n_frames):
                 t = k / float(fps)
@@ -146,12 +181,18 @@ def main():
     P = edl.get('project_dir') or os.path.dirname(os.path.abspath(a.edl))
     W = int(edl.get('W', a.width))
     H = int(edl.get('H', a.height))
+    accent_default = edl.get('accent', '#FFD600')
     rendered = 0
     for ins in edl.get('inserts', []):
-        hk = ins.get('html_hook')
+        preset = ins.get('preset')
+        hk = ins.get('html_hook') or (HOOK_CATALOG[preset]['html'] if preset in HOOK_CATALOG else None)
         if not hk:
             continue
         html_abs = hk if os.path.isabs(hk) else os.path.join(P, hk)
+        if not os.path.exists(html_abs):
+            skill_rel = os.path.join(SKILL, hk)
+            if os.path.exists(skill_rel):
+                html_abs = skill_rel
         if not os.path.exists(html_abs):
             sys.exit(f"ERROR: insert {ins.get('id')} missing html_hook: {hk}")
         dur = float(ins['t1'] - ins['t0'])
@@ -161,7 +202,13 @@ def main():
             ins['overlay'] = {'src': target_rel}
         target_abs = target_rel if os.path.isabs(target_rel) else os.path.join(P, target_rel)
         alpha = bool(ins.get('alpha', ins.get('kind') == 'overlay'))
-        render_html_to_video(html_abs, target_abs, dur, fps=a.fps, width=W, height=H, alpha=alpha)
+        params = dict(ins.get('params') or {})
+        for k in ('title', 'subtitle', 'label', 'from', 'to', 'suffix', 'accent'):
+            if k in ins and k not in params:
+                params[k] = ins[k]
+        params.setdefault('accent', accent_default)
+        params.setdefault('dur', dur)
+        render_html_to_video(html_abs, target_abs, dur, fps=a.fps, width=W, height=H, alpha=alpha, params=params)
         rendered += 1
 
     if rendered:

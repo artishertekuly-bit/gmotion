@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+<title>1. frazix_dossier_hook</title>
+<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<script src="_hook_core.js"></script>
+</head>
+<body>
+<canvas id="stage" width="1080" height="1920"></canvas>
+<script>
+// Rossark spring physics + Frazix detective dossier card + barcode + dotgrid
+HookCore.initStage((ctx, t, imgs, cfg) => {
+  const { W, H, clamp, seg, springPhys, envelope, drawAsset, roundRectPath } = HookCore;
+  const { alpha } = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+  const sp = springPhys(t, 220, 18);
+  const title = (cfg.title || 'ЖАСЫРЫН КЕЙС #01').toUpperCase();
+  const label = (cfg.label || 'ДОСЬЕ · ҚҰПИЯ ДЕРЕК').toUpperCase();
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Background dotgrid parallax behind speaker
+  drawAsset(ctx, imgs.dotgrid, W / 2, 540 + (1 - sp) * 28, 920, 0, 0.34 * alpha);
+
+  // Detective dossier card flying in cleanly with spring scale 0.90->1.0 + tilt
+  const cardScale = 0.90 + 0.10 * sp;
+  const cardRot = (-3.2 + Math.sin(t * 1.4) * 0.6) * Math.PI / 180;
+  ctx.save();
+  ctx.translate(W / 2, 415);
+  ctx.rotate(cardRot);
+  ctx.scale(cardScale, cardScale);
+  drawAsset(ctx, imgs.dossier, 0, 0, 790, 0, 0.95);
+
+  // Dynamic Kaz copy stamped inside card
+  ctx.fillStyle = '#0B0B0B';
+  ctx.font = '800 22px "JetBrains Mono", Consolas, monospace';
+  ctx.fillText(label, -310, -108);
+
+  ctx.fillStyle = '#161216';
+  ctx.font = '900 44px "Unbounded", "Montserrat", sans-serif';
+  ctx.fillText(title.slice(0, 22), -310, -34);
+  if (title.length > 22) ctx.fillText(title.slice(22, 44), -310, 20);
+
+  // Red stamp + scanline pass
+  const stampSp = springPhys(Math.max(0, t - 0.38), 260, 16);
+  if (stampSp > 0.01) {
+    ctx.save();
+    ctx.translate(215, 72);
+    ctx.rotate(-0.18);
+    ctx.scale(1.18 - 0.18 * stampSp, 1.18 - 0.18 * stampSp);
+    roundRectPath(ctx, -108, -28, 216, 56, 8);
+    ctx.strokeStyle = cfg.danger;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.fillStyle = cfg.danger;
+    ctx.textAlign = 'center';
+    ctx.font = '900 26px "JetBrains Mono", monospace';
+    ctx.fillText('РАСТАЛДЫ', 0, 9);
+    ctx.restore();
+  }
+
+  drawAsset(ctx, imgs.barcode, -205, 92, 185, 0, 0.85);
+  ctx.restore();
+
+  // Horizontal scanner sweep
+  const scanY = 230 + ((t * 180) % 370);
+  ctx.fillStyle = cfg.accent;
+  ctx.globalAlpha = 0.25 * alpha * (1 - seg(t, cfg.dur - 0.3, cfg.dur));
+  ctx.fillRect(145, scanY, 790, 3);
+  ctx.restore();
+}, {
+  dossier: '../frazix/frazix_dossier_card.png',
+  barcode: '../frazix/frazix_barcode.png',
+  dotgrid: '../frazix/frazix_dotgrid.png',
+});
+</script>
+</body>
+</html>
