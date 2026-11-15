@@ -7,35 +7,35 @@ __pycache__/
 .tmp_repos/
 node_modules/
 
-# Heavy raw media, unrelated local experiments, and generated render caches
+# Heavy raw media, unrelated root experiments, and generated render caches (leading slash anchors to repo root!)
 *.mp4
 *.mov
 *.mkv
 *.avi
 *.mp3
 *.wav
-test_*.py
-check_*.py
-НАЧАТЬ_ЗДЕСЬ.md
-claude-animation-skills/
-colab/
-remotion/
-revideos/
-scratch/
-scripts/
-shorts/
-voices/
-work/
-soundeffects/
-projects/**/footage/
-projects/**/render/
-projects/**/matte/
-projects/**/audio/
-projects/**/hooks_rendered/
-projects/**/context/sub.*.vtt
-projects/**/context/source.info.json
+/test_*.py
+/check_*.py
+/НАЧАТЬ_ЗДЕСЬ.md
+/claude-animation-skills/
+/colab/
+/remotion/
+/revideos/
+/scratch/
+/scripts/
+/shorts/
+/voices/
+/work/
+/soundeffects/
+/projects/**/footage/
+/projects/**/render/
+/projects/**/matte/
+/projects/**/audio/
+/projects/**/hooks_rendered/
+/projects/**/context/sub.*.vtt
+/projects/**/context/source.info.json
 
 # Keep only the active cloud-rendered skills inside .agents/skills/
-.agents/skills/*
-!.agents/skills/talking-head-kz/
-!.agents/skills/kz-story-flow/
+/.agents/skills/*
+!/.agents/skills/talking-head-kz/
+!/.agents/skills/kz-story-flow/
