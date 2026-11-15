@@ -849,7 +849,9 @@ class Renderer:
             dt = max(0.0, t - T['t0'])
             uk = T.get('underline')
             if uk:
-                png = self.fx_png.get('underline_' + uk) or self.fx_png.get('underline_yellow')
+                png = self.fx_png.get('underline_' + str(uk))
+                if png is None:
+                    png = self.fx_png.get('underline_yellow')
                 if png is not None:
                     prog = bez(min(1.0, dt / 0.24), 0.7, 0.9)
                     col_w = max(1, int(png.shape[1] * prog))

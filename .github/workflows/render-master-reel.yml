@@ -75,7 +75,6 @@ jobs:
           curl -fsSL "https://github.com/google/fonts/raw/main/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf" -o "$HOME/.local/share/fonts/google-kz/JetBrainsMono-Variable.ttf" || true
           curl -fsSL "https://github.com/google/fonts/raw/main/ofl/rubikwetpaint/RubikWetPaint-Regular.ttf" -o "$HOME/.local/share/fonts/google-kz/RubikWetPaint-Regular.ttf" || true
           fc-cache -f
-          python -X utf8 .agents/skills/talking-head-kz/scripts/font_check.py --roles || true
 
       - name: Install Python vision, audio, yt-dlp, and Chromium renderer deps
         run: |
@@ -83,6 +82,7 @@ jobs:
           pip install numpy scipy pillow "yt-dlp[default]" curl_cffi mediapipe rembg onnxruntime playwright
           playwright install chromium
           playwright install-deps chromium
+          python -X utf8 .agents/skills/talking-head-kz/scripts/font_check.py --roles || true
 
       - name: Resolve active project and EDL path
         id: resolve
