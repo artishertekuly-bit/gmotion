@@ -1,0 +1,238 @@
+name: Render Master KZ Reel (Cloud 16GB)
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'projects/**/kz_edl.json'
+      - 'projects/**/edl.json'
+      - 'projects/**/motion_hooks/**'
+      - 'projects/**/podcast_source.json'
+      - '.github/workflows/render-master-reel.yml'
+  workflow_dispatch:
+    inputs:
+      project_dir:
+        description: 'Project folder relative to repo root (e.g. projects/reel_01)'
+        required: true
+        default: 'projects/reel_01'
+      edl_file:
+        description: 'EDL filename inside project_dir (kz_edl.json or edl.json)'
+        required: false
+        default: 'kz_edl.json'
+      youtube_url:
+        description: 'Optional YouTube Podcast URL'
+        required: false
+        default: ''
+      start_time:
+        description: 'Start timestamp or seconds (e.g. 12:34 or 754)'
+        required: false
+        default: ''
+      end_time:
+        description: 'End timestamp or seconds (e.g. 13:28 or 808)'
+        required: false
+        default: ''
+      render_fps:
+        description: 'Hook/render fps'
+        required: false
+        default: '60'
+      run_mattes:
+        description: 'Generate mediapipe+rembg speaker mattes for 3-layer depth'
+        required: false
+        default: 'true'
+
+jobs:
+  cloud-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install system FFmpeg, Kazakh fonts, and Playwright deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ffmpeg \
+            fonts-dejavu-core \
+            fonts-noto-core \
+            fonts-liberation
+          fc-cache -f
+
+      - name: Install Python vision, audio, yt-dlp, and Chromium renderer deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy scipy pillow "yt-dlp[default]" curl_cffi mediapipe rembg onnxruntime playwright
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Resolve active project and EDL path
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+          P="${{ github.event.inputs.project_dir }}"
+          EDL_NAME="${{ github.event.inputs.edl_file || 'kz_edl.json' }}"
+          if [ -z "$P" ]; then
+            CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'projects/**' | head -n 1 || true)
+            if [ -n "$CHANGED" ]; then
+              # Walk up until kz_edl.json or edl.json is found
+              DIR=$(dirname "$CHANGED")
+              while [ "$DIR" != "." ] && [ "$DIR" != "/" ]; do
+                if [ -f "$DIR/kz_edl.json" ]; then
+                  P="$DIR"; EDL_NAME="kz_edl.json"; break
+                elif [ -f "$DIR/edl.json" ]; then
+                  P="$DIR"; EDL_NAME="edl.json"; break
+                fi
+                DIR=$(dirname "$DIR")
+              done
+            fi
+          fi
+          if [ -z "$P" ]; then
+            FIRST_EDL=$(find projects -maxdepth 3 \( -name 'kz_edl.json' -o -name 'edl.json' \) 2>/dev/null | head -n 1 || true)
+            if [ -n "$FIRST_EDL" ]; then
+              P=$(dirname "$FIRST_EDL")
+              EDL_NAME=$(basename "$FIRST_EDL")
+            fi
+          fi
+          if [ -z "$P" ] || [ ! -f "$P/$EDL_NAME" ]; then
+            echo "No runnable project EDL found. Skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "project_dir=$P" >> "$GITHUB_OUTPUT"
+          echo "edl_path=$P/$EDL_NAME" >> "$GITHUB_OUTPUT"
+          echo "Resolved project: $P ($P/$EDL_NAME)"
+
+      - name: Download selected YouTube section only (yt-dlp --download-sections)
+        if: steps.resolve.outputs.skip != 'true'
+        env:
+          INPUT_URL: ${{ github.event.inputs.youtube_url }}
+          INPUT_START: ${{ github.event.inputs.start_time }}
+          INPUT_END: ${{ github.event.inputs.end_time }}
+          PROJECT_DIR: ${{ steps.resolve.outputs.project_dir }}
+        run: |
+          set -euo pipefail
+          URL="$INPUT_URL"
+          START="$INPUT_START"
+          END="$INPUT_END"
+          if [ -z "$URL" ] && [ -f "$PROJECT_DIR/podcast_source.json" ]; then
+            URL=$(python -c "import json; d=json.load(open('$PROJECT_DIR/podcast_source.json')); print(d.get('url',''))")
+            START=$(python -c "import json; d=json.load(open('$PROJECT_DIR/podcast_source.json')); print(d.get('start',''))")
+            END=$(python -c "import json; d=json.load(open('$PROJECT_DIR/podcast_source.json')); print(d.get('end',''))")
+          fi
+          if [ -n "$URL" ] && [ -n "$START" ] && [ -n "$END" ]; then
+            mkdir -p "$PROJECT_DIR/footage"
+            echo "Fetching podcast section *$START-$END from $URL"
+            JS_ARG=""
+            if command -v node >/dev/null 2>&1; then JS_ARG="--js-runtimes node"; fi
+            yt-dlp $JS_ARG --remote-components ejs:github --no-playlist \
+              --download-sections "*$START-$END" \
+              --force-keyframes-at-cuts \
+              -f "bv*[height<=1920]+ba/b[height<=1920]" \
+              --merge-output-format mp4 \
+              -o "$PROJECT_DIR/footage/speaker_raw.mp4" \
+              "$URL"
+          else
+            echo "Using presenter footage already committed inside $PROJECT_DIR."
+          fi
+
+      - name: Prepare timeline, cut pauses, master audio, and speaker mattes (MediaPipe + rembg)
+        if: steps.resolve.outputs.skip != 'true'
+        env:
+          PROJECT_DIR: ${{ steps.resolve.outputs.project_dir }}
+          EDL_PATH: ${{ steps.resolve.outputs.edl_path }}
+          RUN_MATTES: ${{ github.event.inputs.run_mattes || 'true' }}
+          SKILL_DIR: ${{ github.workspace }}/.agents/skills/talking-head-kz
+          REEL_KZFONTS_DIR: ${{ github.workspace }}/kzfonts
+          REEL_SOUNDEFFECTS_DIR: ${{ github.workspace }}/soundeffects
+        run: |
+          set -euo pipefail
+          RAW_PRES="$PROJECT_DIR/footage/speaker_raw.mp4"
+          if [ -f "$RAW_PRES" ] && [ ! -f "$PROJECT_DIR/audio/source_48k.wav" ]; then
+            python -X utf8 "$SKILL_DIR/engine/scripts/prepare_project.py" "$RAW_PRES" --project "$PROJECT_DIR"
+          fi
+          if [ ! -f "$PROJECT_DIR/analysis/cuts.json" ]; then
+            python -X utf8 "$SKILL_DIR/engine/scripts/cut_pauses.py" "$PROJECT_DIR"
+          elif [ ! -f "$PROJECT_DIR/audio/program_raw.wav" ]; then
+            DUR=$(python -c "import json; c=json.load(open('$PROJECT_DIR/analysis/cuts.json')); print(round(sum(x['src_t1']-x['src_t0'] for x in c), 3))")
+            ffmpeg -v error -y -i "$PROJECT_DIR/audio/source_48k.wav" -t "$DUR" -c:a pcm_s24le -ar 48000 "$PROJECT_DIR/audio/program_raw.wav"
+          fi
+          if [ ! -f "$PROJECT_DIR/audio/program_master.wav" ]; then
+            python -X utf8 "$SKILL_DIR/engine/scripts/master_audio.py" "$PROJECT_DIR"
+          fi
+          if [ "$RUN_MATTES" = "true" ] && [ ! -f "$PROJECT_DIR/matte/presenter_body.mov" ]; then
+            python -X utf8 "$SKILL_DIR/engine/scripts/presenter_mattes.py" "$PROJECT_DIR" --width 1080
+          fi
+
+      - name: Render 40% HTML / Three.js / WebGL motion hooks in Headless Chromium
+        if: steps.resolve.outputs.skip != 'true'
+        env:
+          EDL_PATH: ${{ steps.resolve.outputs.edl_path }}
+          RENDER_FPS: ${{ github.event.inputs.render_fps || '60' }}
+          SKILL_DIR: ${{ github.workspace }}/.agents/skills/talking-head-kz
+        run: |
+          python -X utf8 "$SKILL_DIR/scripts/render_hooks_chromium.py" "$EDL_PATH" --fps "$RENDER_FPS"
+
+      - name: Mix SFX cues from ./soundeffects/ + synthesized hits and validate EDL
+        if: steps.resolve.outputs.skip != 'true'
+        env:
+          PROJECT_DIR: ${{ steps.resolve.outputs.project_dir }}
+          EDL_PATH: ${{ steps.resolve.outputs.edl_path }}
+          SKILL_DIR: ${{ github.workspace }}/.agents/skills/talking-head-kz
+          REEL_KZFONTS_DIR: ${{ github.workspace }}/kzfonts
+          REEL_SOUNDEFFECTS_DIR: ${{ github.workspace }}/soundeffects
+        run: |
+          set -euo pipefail
+          if [ -f "$PROJECT_DIR/audio/program_master.wav" ]; then
+            SFX_ARG=""
+            if [ -d "$REEL_SOUNDEFFECTS_DIR" ]; then SFX_ARG="--sfx-dir $REEL_SOUNDEFFECTS_DIR"; fi
+            python -X utf8 "$SKILL_DIR/scripts/sfx_from_edl.py" "$EDL_PATH" $SFX_ARG --out audio/program_sfx.wav
+            python - <<PY
+          import json
+          p = "$EDL_PATH"
+          edl = json.load(open(p, encoding='utf-8'))
+          edl['audio'] = 'audio/program_sfx.wav'
+          json.dump(edl, open(p, 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
+          PY
+          fi
+          python -X utf8 "$SKILL_DIR/engine/scripts/validate_edl.py" "$EDL_PATH"
+          if [ -f "$PROJECT_DIR/analysis/program_words.json" ]; then
+            python -X utf8 "$SKILL_DIR/scripts/kz_lint.py" "$EDL_PATH" || true
+          fi
+
+      - name: Composite 3-layer Master MP4 + 60% dynamic ASS subtitles + Phone H.264 copy
+        if: steps.resolve.outputs.skip != 'true'
+        env:
+          PROJECT_DIR: ${{ steps.resolve.outputs.project_dir }}
+          EDL_PATH: ${{ steps.resolve.outputs.edl_path }}
+          SKILL_DIR: ${{ github.workspace }}/.agents/skills/talking-head-kz
+          REEL_KZFONTS_DIR: ${{ github.workspace }}/kzfonts
+        run: |
+          set -euo pipefail
+          mkdir -p "$PROJECT_DIR/render" "$PROJECT_DIR/qa"
+          OUT_MASTER="$PROJECT_DIR/render/master.mp4"
+          OUT_PHONE="$PROJECT_DIR/render/master_phone.mp4"
+          python -X utf8 "$SKILL_DIR/engine/scripts/render_reel.py" "$EDL_PATH" --out "$OUT_MASTER" --crf 12 --workers 4
+          ffmpeg -v error -y -i "$OUT_MASTER" -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart "$OUT_PHONE"
+          python -X utf8 "$SKILL_DIR/scripts/review_render.py" "$OUT_MASTER" --edl "$EDL_PATH" --out-dir "$PROJECT_DIR/qa/review"
+
+      - name: Upload Master MP4, Phone MP4, and QA contact sheets
+        if: steps.resolve.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: talking-head-kz-master-reel
+          path: |
+            ${{ steps.resolve.outputs.project_dir }}/render/*.mp4
+            ${{ steps.resolve.outputs.project_dir }}/qa/review/**
+            ${{ steps.resolve.outputs.project_dir }}/analysis/sfx_events.json
+          retention-days: 14

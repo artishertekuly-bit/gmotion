@@ -1,0 +1,859 @@
+{
+  "_about": "Mastery 60/40 High-Edit EDL for Dariga Badykova podcast slice (MDCrs6R_Epg, 33:52.5-34:46.0)",
+  "name": "dariga_160mln_60_40",
+  "W": 1080,
+  "H": 1920,
+  "fps": 30,
+  "halftone": false,
+  "accent": "#FFD600",
+  "speaker_name": "Дариға Бадықова",
+  "speaker_title": "Актриса · Продюсер",
+  "beats": [
+    {
+      "n": 1,
+      "name": "Хук: 160 млн",
+      "t0": 0.0,
+      "t1": 6.0
+    },
+    {
+      "n": 2,
+      "name": "Хабарласу",
+      "t0": 6.0,
+      "t1": 13.9
+    },
+    {
+      "n": 3,
+      "name": "Шок · Феномен",
+      "t0": 13.9,
+      "t1": 19.8
+    },
+    {
+      "n": 4,
+      "name": "Не алуға болады?",
+      "t0": 19.8,
+      "t1": 29.2
+    },
+    {
+      "n": 5,
+      "name": "Доллар мен Теңге",
+      "t0": 29.2,
+      "t1": 39.6
+    },
+    {
+      "n": 6,
+      "name": "Қымбат екен...",
+      "t0": 39.6,
+      "t1": 48.8
+    },
+    {
+      "n": 7,
+      "name": "Жоқшылықтан страх",
+      "t0": 48.8,
+      "t1": 53.5
+    }
+  ],
+  "zoom": [
+    [
+      0.0,
+      3.01,
+      "tight"
+    ],
+    [
+      3.01,
+      6.11,
+      "wide"
+    ],
+    [
+      6.11,
+      8.31,
+      "tight"
+    ],
+    [
+      8.31,
+      10.31,
+      "wide"
+    ],
+    [
+      10.31,
+      13.91,
+      "tight"
+    ],
+    [
+      13.91,
+      16.81,
+      "wide"
+    ],
+    [
+      16.81,
+      19.81,
+      "tight"
+    ],
+    [
+      19.81,
+      22.61,
+      "wide"
+    ],
+    [
+      22.61,
+      25.31,
+      "tight"
+    ],
+    [
+      25.31,
+      27.11,
+      "wide"
+    ],
+    [
+      27.11,
+      30.3,
+      "tight"
+    ],
+    [
+      30.3,
+      33.31,
+      "wide"
+    ],
+    [
+      33.31,
+      36.41,
+      "tight"
+    ],
+    [
+      36.41,
+      39.41,
+      "wide"
+    ],
+    [
+      39.41,
+      42.91,
+      "tight"
+    ],
+    [
+      42.91,
+      46.21,
+      "wide"
+    ],
+    [
+      46.21,
+      48.81,
+      "tight"
+    ],
+    [
+      48.81,
+      51.71,
+      "wide"
+    ],
+    [
+      51.71,
+      53.5,
+      "tight"
+    ]
+  ],
+  "inserts": [
+    {
+      "id": "hook_boxoffice_3d",
+      "kind": "overlay",
+      "t0": 0.51,
+      "t1": 4.01,
+      "alpha": true,
+      "behind_speaker": true,
+      "html_hook": "motion_hooks/hook_boxoffice_3d.html",
+      "sfx": [
+        {
+          "src": "whoosh",
+          "t": 0.51,
+          "gain": -10
+        }
+      ]
+    },
+    {
+      "id": "hook_milestone_split",
+      "kind": "overlay",
+      "t0": 13.91,
+      "t1": 19.01,
+      "alpha": true,
+      "behind_speaker": true,
+      "html_hook": "motion_hooks/hook_milestone_split.html",
+      "sfx": [
+        {
+          "src": "whoosh",
+          "t": 13.91,
+          "gain": -10
+        }
+      ]
+    },
+    {
+      "id": "hook_currency_crt",
+      "kind": "overlay",
+      "t0": 33.31,
+      "t1": 39.41,
+      "alpha": true,
+      "behind_speaker": true,
+      "html_hook": "motion_hooks/hook_currency_crt.html",
+      "sfx": [
+        {
+          "src": "whoosh",
+          "t": 33.31,
+          "gain": -11
+        }
+      ]
+    },
+    {
+      "id": "stat_fear_number",
+      "kind": "number",
+      "t0": 48.81,
+      "t1": 51.2,
+      "trans": "zoom",
+      "bg": "#0D100F",
+      "label": "ТӘУЛІКТІК КАССА",
+      "from": 0,
+      "to": 160,
+      "suffix": " МЛН ₸",
+      "count": [
+        0.1,
+        1.2
+      ],
+      "status": "ЖОҚШЫЛЫҚТАН СТРАХ",
+      "sfx": [
+        {
+          "src": "whoosh",
+          "t": 48.81,
+          "gain": -11
+        }
+      ]
+    }
+  ],
+  "text": [
+    {
+      "font": "anton",
+      "text": "160 МИЛЛИОН",
+      "t0": -0.35,
+      "t1": 0.8,
+      "x": 540,
+      "y": 1290,
+      "size": 86,
+      "color": "#FFD600",
+      "anim": "rise",
+      "glow": true,
+      "fadeout": true
+    },
+    {
+      "font": "anton",
+      "text": "160",
+      "t0": 0.813,
+      "t1": 1.313,
+      "x": 540,
+      "y": 1278,
+      "size": 94,
+      "color": "#00E676",
+      "anim": "pop",
+      "counter": [
+        0.813,
+        1.233,
+        0,
+        160,
+        ""
+      ],
+      "glow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "миллион",
+      "t0": 1.313,
+      "t1": 1.613,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "pill": "#1D2B24",
+      "anim": "pop",
+      "sfx": "pop",
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "тауып жатты",
+      "t0": 1.613,
+      "t1": 2.933,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        1.613,
+        1.913
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "mono",
+      "text": "тапты ма бір",
+      "t0": 3.013,
+      "t1": 4.583,
+      "x": 540,
+      "y": 1290,
+      "size": 55,
+      "color": "#EDE6DE",
+      "highlight_color": "#00E676",
+      "anim": "terminal",
+      "fadeout": false,
+      "shadow": true
+    },
+    {
+      "font": "mono",
+      "text": "түсінген жоқ",
+      "t0": 4.713,
+      "t1": 5.313,
+      "x": 540,
+      "y": 1290,
+      "size": 55,
+      "color": "#EDE6DE",
+      "highlight_color": "#00E676",
+      "anim": "terminal",
+      "fadeout": false,
+      "shadow": true
+    },
+    {
+      "font": "sub",
+      "text": "мен соны хабарласам",
+      "t0": 5.313,
+      "t1": 7.113,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#00E676",
+      "wt": [
+        5.313,
+        6.113,
+        6.413
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "осылай болу керек па",
+      "t0": 7.113,
+      "t1": 8.013,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        7.113,
+        7.413,
+        7.613,
+        7.938
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "деймін неге ондай",
+      "t0": 8.013,
+      "t1": 8.813,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#00E676",
+      "wt": [
+        8.013,
+        8.313,
+        8.513
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "болмаған дейді",
+      "t0": 8.813,
+      "t1": 10.313,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        8.813,
+        9.413
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "мынау бірінші рет",
+      "t0": 10.313,
+      "t1": 11.013,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#00E676",
+      "wt": [
+        10.313,
+        10.413,
+        10.813
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "бізде дейді қазақ",
+      "t0": 11.013,
+      "t1": 11.88,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        11.013,
+        11.313,
+        11.513
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "киносында",
+      "t0": 11.88,
+      "t1": 13.37,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#00E676",
+      "wt": [
+        11.88
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "mono",
+      "text": "өздері шок",
+      "t0": 13.913,
+      "t1": 15.483,
+      "x": 540,
+      "y": 1290,
+      "size": 55,
+      "color": "#EDE6DE",
+      "highlight_color": "#00E676",
+      "anim": "terminal",
+      "fadeout": false,
+      "shadow": true
+    },
+    {
+      "font": "mono",
+      "text": "феноменальды түрде деп",
+      "t0": 16.813,
+      "t1": 18.213,
+      "x": 540,
+      "y": 1290,
+      "size": 55,
+      "color": "#EDE6DE",
+      "highlight_color": "#00E676",
+      "anim": "terminal",
+      "fadeout": false,
+      "shadow": true
+    },
+    {
+      "font": "sub",
+      "text": "тұр ғой",
+      "t0": 18.213,
+      "t1": 19.433,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        18.213,
+        18.613
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "160",
+      "t0": 19.813,
+      "t1": 22.613,
+      "x": 540,
+      "y": 1194,
+      "size": 64,
+      "color": "#FFFFFF",
+      "anim": "rise",
+      "glow": false,
+      "fadeout": true
+    },
+    {
+      "font": "anton",
+      "text": "МИЛЛИОН",
+      "t0": 20.313,
+      "t1": 22.613,
+      "x": 540,
+      "y": 1290,
+      "size": 90,
+      "color": "#FFD600",
+      "anim": "rise",
+      "glow": true,
+      "fadeout": true
+    },
+    {
+      "font": "sub",
+      "text": "КҮНІНЕ",
+      "t0": 20.613,
+      "t1": 22.613,
+      "x": 540,
+      "y": 1386,
+      "size": 64,
+      "color": "#FFFFFF",
+      "anim": "rise",
+      "glow": false,
+      "fadeout": true
+    },
+    {
+      "font": "mono",
+      "text": "ол 160 миллион",
+      "t0": 22.613,
+      "t1": 23.813,
+      "x": 540,
+      "y": 1290,
+      "size": 55,
+      "color": "#EDE6DE",
+      "highlight_color": "#00E676",
+      "anim": "terminal",
+      "fadeout": false,
+      "shadow": true
+    },
+    {
+      "font": "sub",
+      "text": "деген қандай болады?",
+      "t0": 23.813,
+      "t1": 25.313,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#00E676",
+      "wt": [
+        23.813,
+        24.013,
+        24.413
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "вообще мен білмеймін",
+      "t0": 25.313,
+      "t1": 26.113,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        25.313,
+        25.613,
+        25.713
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "оны не алуға болады",
+      "t0": 26.113,
+      "t1": 28.113,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#00E676",
+      "wt": [
+        26.113,
+        27.113,
+        27.463,
+        27.813
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "оған не келеді?",
+      "t0": 28.113,
+      "t1": 29.533,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        28.113,
+        28.313,
+        28.713
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "mono",
+      "text": "қазірде доллар",
+      "t0": 33.313,
+      "t1": 34.313,
+      "x": 540,
+      "y": 1290,
+      "size": 55,
+      "color": "#EDE6DE",
+      "highlight_color": "#00E676",
+      "anim": "terminal",
+      "fadeout": false,
+      "shadow": true
+    },
+    {
+      "font": "sub",
+      "text": "мен басқа елдің",
+      "t0": 34.313,
+      "t1": 36.413,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        34.313,
+        35.513,
+        36.013
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "ақшасы мен айтсаң",
+      "t0": 36.413,
+      "t1": 37.313,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#00E676",
+      "wt": [
+        36.413,
+        36.813,
+        36.913
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "теңгеге",
+      "t0": 37.313,
+      "t1": 37.813,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "pill": "#1D2B24",
+      "anim": "pop",
+      "sfx": "pop",
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "шаққанда қанша",
+      "t0": 37.813,
+      "t1": 38.613,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#00E676",
+      "wt": [
+        37.813,
+        38.313
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "деймін да",
+      "t0": 38.613,
+      "t1": 39.833,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        38.613,
+        39.013
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "mono",
+      "text": "теңгеге шақпай",
+      "t0": 42.913,
+      "t1": 43.813,
+      "x": 540,
+      "y": 1290,
+      "size": 55,
+      "color": "#EDE6DE",
+      "highlight_color": "#00E676",
+      "anim": "terminal",
+      "fadeout": false,
+      "shadow": true
+    },
+    {
+      "font": "sub",
+      "text": "сол қанша сол",
+      "t0": 43.813,
+      "t1": 45.013,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        43.813,
+        44.013,
+        44.813
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "осындай десе",
+      "t0": 45.013,
+      "t1": 46.033,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#00E676",
+      "wt": [
+        45.013,
+        45.413
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "mono",
+      "text": "қымбат екен деп жатыр",
+      "t0": 46.213,
+      "t1": 47.613,
+      "x": 540,
+      "y": 1290,
+      "size": 55,
+      "color": "#EDE6DE",
+      "highlight_color": "#00E676",
+      "anim": "terminal",
+      "fadeout": false,
+      "shadow": true
+    },
+    {
+      "font": "sub",
+      "text": "сөйтем",
+      "t0": 47.613,
+      "t1": 48.633,
+      "x": 540,
+      "y": 1290,
+      "size": 70,
+      "color": "#FFFFFF",
+      "highlight_color": "#00E676",
+      "wt": [
+        47.613
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "mono",
+      "text": "страх бар",
+      "t0": 48.813,
+      "t1": 49.85,
+      "x": 540,
+      "y": 1290,
+      "size": 55,
+      "color": "#EDE6DE",
+      "highlight_color": "#00E676",
+      "anim": "terminal",
+      "fadeout": false,
+      "shadow": true
+    },
+    {
+      "font": "sub",
+      "text": "жоқшылықтан страх бар",
+      "t0": 51.71,
+      "t1": 53.5,
+      "x": 540,
+      "y": 1290,
+      "size": 68,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        51.71,
+        52.31,
+        52.71
+      ],
+      "anim": "word_pop",
+      "shadow": true,
+      "fadeout": false
+    },
+    {
+      "font": "sub",
+      "text": "пікірге «миллиард» деп жаз",
+      "t0": 49.9,
+      "t1": 53.5,
+      "x": 540,
+      "y": 1435,
+      "size": 48,
+      "color": "#0B0B0B",
+      "pill": "#FFD600",
+      "anim": "pop",
+      "sfx": "pop",
+      "fadeout": false
+    }
+  ]
+}

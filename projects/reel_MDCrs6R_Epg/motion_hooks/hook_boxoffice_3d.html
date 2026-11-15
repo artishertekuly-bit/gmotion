@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: transparent !important;
+    font-family: 'Segoe UI Black', 'DejaVu Sans', Arial, sans-serif;
+  }
+  canvas#fx {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1920px;
+  }
+  .hud-top {
+    position: absolute;
+    left: 72px;
+    right: 72px;
+    top: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 26px;
+    border-radius: 999px;
+    background: rgba(11, 14, 13, 0.88);
+    border: 2px solid rgba(255, 214, 0, 0.72);
+    color: #FFD600;
+    font-size: 26px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #00E676;
+    box-shadow: 0 0 14px #00E676;
+  }
+  .counter-card {
+    padding: 22px 42px;
+    border-radius: 26px;
+    background: linear-gradient(160deg, rgba(16, 20, 18, 0.92), rgba(24, 34, 28, 0.86));
+    border: 2px solid rgba(0, 230, 118, 0.55);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+    text-align: center;
+  }
+  .counter-val {
+    font-size: 98px;
+    line-height: 1.02;
+    font-weight: 900;
+    color: #FFFFFF;
+    font-variant-numeric: tabular-nums;
+  }
+  .counter-val span.unit {
+    color: #00E676;
+    margin-left: 10px;
+  }
+  .counter-sub {
+    margin-top: 8px;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: #EDE6DE;
+    opacity: 0.85;
+  }
+</style>
+</head>
+<body>
+<canvas id="fx" width="1080" height="1920"></canvas>
+<div class="hud-top" id="hud">
+  <div class="badge"><span class="dot"></span>ҚАЗАҚ КИНОСЫ · РЕКОРД</div>
+  <div class="counter-card" id="card">
+    <div class="counter-val"><span id="num">0</span><span class="unit">МЛН ₸</span></div>
+    <div class="counter-sub">ТӘУЛІКТІК КАССА ТҮСІМІ</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const cv = document.getElementById('fx');
+  const ctx = cv.getContext('2d');
+  const hud = document.getElementById('hud');
+  const card = document.getElementById('card');
+  const numEl = document.getElementById('num');
+  const DUR = 3.5;
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function smoothstep(a, b, x) {
+    const u = clamp((x - a) / Math.max(1e-6, b - a), 0, 1);
+    return u * u * (3 - 2 * u);
+  }
+  // Analytic damped spring (lemo-opuscar / reanimate pattern)
+  function spring(t, k = 175, z = 0.58) {
+    if (t <= 0) return 0;
+    const w = Math.sqrt(k);
+    if (z < 1) {
+      const wd = w * Math.sqrt(1 - z * z);
+      return 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + (z * w / wd) * Math.sin(wd * t));
+    }
+    return 1 - Math.exp(-w * t) * (1 + w * t);
+  }
+  // Deterministic PRNG for golden particles (pixelfx style)
+  function hash(i) {
+    let n = (i * 374761393 + 668265263) | 0;
+    n = (n ^ (n >>> 13)) * 1274126177;
+    return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
+  }
+
+  const PARTS = Array.from({ length: 48 }, (_, i) => ({
+    x0: 140 + hash(i * 3 + 1) * 800,
+    y0: 450 + hash(i * 3 + 2) * 900,
+    vx: (hash(i * 5 + 3) - 0.5) * 90,
+    vy: -60 - hash(i * 5 + 4) * 140,
+    sz: 3 + hash(i * 7 + 5) * 7,
+    phase: hash(i * 11 + 6) * 6.28,
+    gold: hash(i * 13 + 7) > 0.42
+  }));
+
+  window.seek = function (t) {
+    const inEnv = spring(t, 165, 0.56);
+    const outEnv = 1.0 - smoothstep(DUR - 0.38, DUR, t);
+    const vis = clamp(inEnv * outEnv, 0, 1.15);
+
+    // HUD upper-zone entrance (stays cleanly above face band y < 500)
+    const sc = 0.90 + 0.10 * clamp(inEnv, 0, 1.12);
+    const ty = (1 - clamp(inEnv, 0, 1.08)) * -42;
+    hud.style.opacity = clamp(vis, 0, 1).toFixed(4);
+    hud.style.transform = `translate3d(0, ${ty.toFixed(2)}px, 0) scale(${sc.toFixed(4)})`;
+
+    // Counter 0 -> 160 across [0.18s .. 1.35s]
+    const cu = smoothstep(0.18, 1.35, t);
+    const easedCu = 1 - Math.pow(1 - cu, 3);
+    numEl.textContent = Math.round(easedCu * 160);
+    card.style.borderColor = cu >= 0.99 ? 'rgba(255, 214, 0, 0.9)' : 'rgba(0, 230, 118, 0.6)';
+
+    ctx.clearRect(0, 0, 1080, 1920);
+
+    // Sweeping Swiss grid hairlines behind speaker shoulders
+    const gridA = 0.16 * clamp(vis, 0, 1);
+    ctx.strokeStyle = `rgba(255, 214, 0, ${gridA.toFixed(3)})`;
+    ctx.lineWidth = 1.5;
+    for (let x = 180; x <= 900; x += 180) {
+      ctx.beginPath();
+      ctx.moveTo(x, 120);
+      ctx.lineTo(x, 1780);
+      ctx.stroke();
+    }
+
+    // Concentric radial shock rings at t = 0.7s impact
+    const ringT = clamp((t - 0.65) / 1.1, 0, 1);
+    if (ringT > 0 && ringT < 1) {
+      const r = 140 + ringT * 520;
+      ctx.strokeStyle = `rgba(0, 230, 118, ${(0.55 * (1 - ringT) * clamp(vis, 0, 1)).toFixed(3)})`;
+      ctx.lineWidth = 4 * (1 - ringT);
+      ctx.beginPath();
+      ctx.arc(540, 820, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Analytic ballistic particles behind speaker matte
+    for (const p of PARTS) {
+      const px = p.x0 + p.vx * t + Math.sin(t * 2.1 + p.phase) * 24;
+      const py = p.y0 + p.vy * t;
+      const a = clamp(vis, 0, 1) * (0.35 + 0.45 * Math.sin(t * 4.5 + p.phase));
+      if (a <= 0.02) continue;
+      ctx.fillStyle = p.gold
+        ? `rgba(255, 214, 0, ${a.toFixed(3)})`
+        : `rgba(0, 230, 118, ${a.toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(px, py, p.sz, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+  window.seek(0);
+})();
+</script>
+</body>
+</html>

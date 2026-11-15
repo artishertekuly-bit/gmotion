@@ -1,0 +1,277 @@
+{
+ "_about": "Three different treatments of the hook beat of the Kazakh demo. Run: python -X utf8 scripts/variants.py DIR/edl.json --options THIS",
+ "window": [
+  0.0,
+  3.18
+ ],
+ "at": [
+  0.0,
+  1.08,
+  2.76
+ ],
+ "options": {
+  "A": {
+   "note": "Баған мойын астында: түйінді сөз бірінші кадрдан тұр, екпін кейін көтеріледі",
+   "zoom": "tight",
+   "text": [
+    {
+     "font": "anton",
+     "text": "САЛМА",
+     "t0": -0.4,
+     "t1": 3.1300000000000003,
+     "y": 1240,
+     "size": 210,
+     "color": "#E02B20",
+     "keep_t1": true
+    },
+    {
+     "font": "serif",
+     "text": "бір қатені",
+     "t0": 0.45,
+     "t1": 3.1300000000000003,
+     "y": 1070,
+     "size": 135,
+     "color": "#FFFFFF",
+     "shadow": true
+    }
+   ]
+  },
+  "B": {
+   "note": "Алдымен карточка: қызыл экранда қате аталады, сосын спикер тыйым айтады",
+   "zoom": "tight",
+   "inserts": [
+    {
+     "id": "hook_card",
+     "t0": 0.0,
+     "t1": 1.93,
+     "kind": "solid",
+     "trans": "cut",
+     "flash": null,
+     "bg": "#C4151C"
+    }
+   ],
+   "text": [
+    {
+     "font": "serif",
+     "text": "бір қатені",
+     "t0": -0.4,
+     "t1": 1.93,
+     "y": 930,
+     "size": 160,
+     "color": "#FFFFFF"
+    },
+    {
+     "font": "sub",
+     "text": "түземей",
+     "t0": 1.35,
+     "t1": 1.93,
+     "y": 1080,
+     "size": 92
+    },
+    {
+     "font": "sub",
+     "text": "видео",
+     "t0": 1.93,
+     "t1": 3.1300000000000003,
+     "y": 1105,
+     "size": 88,
+     "shadow": true
+    },
+    {
+     "font": "anton",
+     "text": "САЛМА",
+     "t0": 2.41,
+     "t1": 3.1300000000000003,
+     "y": 1235,
+     "size": 210,
+     "color": "#E02B20",
+     "keep_t1": true
+    }
+   ]
+  },
+  "C": {
+   "note": "Сөз бастың үстінде, сөйлем капсуламен: бет ашық, оқу мен тыңдау қатар жүреді",
+   "zoom": "wide",
+   "text": [
+    {
+     "font": "anton",
+     "text": "САЛМА",
+     "t0": -0.4,
+     "t1": 3.1300000000000003,
+     "y": 400,
+     "size": 190,
+     "color": "#E02B20",
+     "keep_t1": true
+    },
+    {
+     "font": "sub",
+     "text": "мына",
+     "t0": 0.03,
+     "t1": 0.45,
+     "y": 1290,
+     "size": 76,
+     "anim": "pop",
+     "fadeout": false,
+     "pill": "#2F3E2E"
+    },
+    {
+     "font": "sub",
+     "text": "бір",
+     "t0": 0.45,
+     "t1": 0.82,
+     "y": 1290,
+     "size": 76,
+     "anim": "pop",
+     "fadeout": false,
+     "pill": "#2F3E2E"
+    },
+    {
+     "font": "sub",
+     "text": "қатені",
+     "t0": 0.82,
+     "t1": 1.35,
+     "y": 1290,
+     "size": 76,
+     "anim": "pop",
+     "fadeout": false,
+     "pill": "#2F3E2E"
+    },
+    {
+     "font": "sub",
+     "text": "түземей",
+     "t0": 1.35,
+     "t1": 1.93,
+     "y": 1290,
+     "size": 76,
+     "anim": "pop",
+     "fadeout": false,
+     "pill": "#2F3E2E"
+    },
+    {
+     "font": "sub",
+     "text": "видео",
+     "t0": 1.93,
+     "t1": 2.41,
+     "y": 1290,
+     "size": 76,
+     "anim": "pop",
+     "fadeout": false,
+     "pill": "#2F3E2E"
+    },
+    {
+     "font": "sub",
+     "text": "салма",
+     "t0": 2.41,
+     "t1": 3.18,
+     "y": 1290,
+     "size": 76,
+     "anim": "pop",
+     "fadeout": false,
+     "pill": "#2F3E2E"
+    }
+   ]
+  },
+  "D": {
+   "note": "60/40 Depth (three.js + reanimate + kinetic_stack): артында 3D/HUD моушн-қабат, спикер алдында, 3 қатарлы хук + word_pop",
+   "zoom": "wide",
+   "inserts": [
+    {
+     "id": "hook_depth_overlay",
+     "t0": 0.0,
+     "t1": 3.18,
+     "kind": "overlay",
+     "depth": "behind_speaker",
+     "bg_dim": 0.42,
+     "trans": "cut",
+     "sfx": "hit",
+     "html_hook": "motion_hooks/hook_depth.html",
+     "overlay": {
+      "src": "hooks_rendered/hook_depth.mov"
+     }
+    }
+   ],
+   "text": [
+    {
+     "font": "anton",
+     "text": "МЫНА БІР",
+     "t0": -0.4,
+     "t1": 1.35,
+     "y": 380,
+     "size": 100,
+     "color": "#FFFFFF",
+     "behind": true,
+     "keep_t1": true
+    },
+    {
+     "font": "anton",
+     "text": "ҚАТЕНІ",
+     "t0": 0.25,
+     "t1": 1.35,
+     "y": 485,
+     "size": 130,
+     "color": "#FFD600",
+     "behind": true,
+     "keep_t1": true
+    },
+    {
+     "font": "sub",
+     "text": "түземей видео салма",
+     "t0": 1.35,
+     "t1": 3.18,
+     "y": 1290,
+     "size": 74,
+     "color": "#FFFFFF",
+     "highlight_color": "#00E676",
+     "anim": "word_pop",
+     "wt": [1.35, 1.93, 2.41],
+     "shadow": true,
+     "fadeout": false
+    }
+   ]
+  },
+  "E": {
+   "note": "lemo-opuscar ascii-crt + rossark_pill + reanimate_counter: терминал интригасы, UI капсула + pop.wav, сандық санағыш",
+   "zoom": "tight",
+   "text": [
+    {
+     "font": "mono",
+     "text": "НЕГЕ 90% ВИДЕО ӨТПЕЙДІ?",
+     "t0": -0.35,
+     "t1": 1.35,
+     "y": 410,
+     "size": 52,
+     "color": "#EDE6DE",
+     "highlight_color": "#00E676",
+     "anim": "terminal",
+     "pill": "#0B0B0B",
+     "pill_radius": 0.18
+    },
+    {
+     "font": "anton",
+     "text": "90%",
+     "t0": 1.35,
+     "t1": 2.35,
+     "y": 1210,
+     "size": 145,
+     "color": "#00E676",
+     "anim": "pop",
+     "counter": [1.35, 1.85, 0, 90, "%"],
+     "glow": true,
+     "fadeout": false
+    },
+    {
+     "font": "sub",
+     "text": "ҚАТЕЛІК",
+     "t0": 2.35,
+     "t1": 3.18,
+     "y": 1290,
+     "size": 78,
+     "anim": "pop",
+     "pill": "#2F3E2E",
+     "sfx": "pop",
+     "fadeout": false
+    }
+   ]
+  }
+ }
+}

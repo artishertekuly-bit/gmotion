@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+<title>talking-head-kz 3D/HUD Motion Hook Template</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: transparent;
+  }
+  canvas {
+    display: block;
+    width: 1080px;
+    height: 1920px;
+  }
+</style>
+</head>
+<body>
+<canvas id="stage" width="1080" height="1920"></canvas>
+<script>
+// Deterministic virtual-clock 40% B-roll / Behind-Speaker Hook Template
+// Combines patterns from lemo-opuscar (spring, monotone, HUD), rossark (flow), reanimate (seek(t)), pixelfx (deterministic particles)
+const W = 1080, H = 1920;
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const seg = (t, a, b) => clamp((t - a) / Math.max(b - a, 1e-6));
+function spring(t, k = 220, z = 0.58) {
+  if (t <= 0) return 0;
+  const w = Math.sqrt(k);
+  if (z < 1) {
+    const wd = w * Math.sqrt(1 - z * z);
+    return 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + (z * w / wd) * Math.sin(wd * t));
+  }
+  return 1 - Math.exp(-w * t) * (1 + w * t);
+}
+
+// Seeded PRNG (mulberry32 from lemo-opuscar / pixelfx)
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const rng = mulberry32(2026);
+const NODES = Array.from({ length: 42 }, () => ({
+  angle: rng() * Math.PI * 2,
+  radius: 180 + rng() * 380,
+  zOff: (rng() - 0.5) * 260,
+  speed: 0.35 + rng() * 0.55,
+  size: 2.5 + rng() * 4.5,
+  accent: rng() > 0.72,
+}));
+
+function drawReticle(cx, cy, r, prog, col) {
+  ctx.save();
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.48 * prog;
+  ctx.setLineDash([12, 18]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2 * prog);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Swiss crosshair ticks
+  for (let i = 0; i < 4; i++) {
+    const a = (i * Math.PI) / 2;
+    const x0 = cx + Math.cos(a) * (r - 18), y0 = cy + Math.sin(a) * (r - 18);
+    const x1 = cx + Math.cos(a) * (r + 18), y1 = cy + Math.sin(a) * (r + 18);
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+window.seek = function (t) {
+  ctx.clearRect(0, 0, W, H);
+  const enter = spring(t, 190, 0.62);
+  const fadeOut = 1.0 - seg(t, 2.75, 3.18);
+  const alpha = clamp(enter * fadeOut, 0, 1);
+
+  // Studio grid hairline (upper background zone above shoulders, safe behind speaker matte)
+  ctx.save();
+  ctx.globalAlpha = 0.16 * alpha;
+  ctx.strokeStyle = '#EDE6DE';
+  ctx.lineWidth = 1;
+  for (let x = 180; x < W; x += 180) {
+    ctx.beginPath(); ctx.moveTo(x, 120); ctx.lineTo(x, 1480); ctx.stroke();
+  }
+  for (let y = 260; y <= 1460; y += 200) {
+    ctx.beginPath(); ctx.moveTo(90, y); ctx.lineTo(W - 90, y); ctx.stroke();
+  }
+  ctx.restore();
+
+  // Hologram orbital reticle behind speaker head (center-upper safe anchor)
+  const cx = W / 2;
+  const cy = 620;
+  drawReticle(cx, cy, 290 + (1 - enter) * 90, clamp(t * 2.2), '#FFD600');
+  drawReticle(cx, cy, 385, clamp((t - 0.1) * 1.8), '#00E676');
+
+  // 3D-projected deterministic orbit particles (pixelfx + three.js depth feel)
+  ctx.save();
+  for (const n of NODES) {
+    const a = n.angle + t * n.speed;
+    const x3 = Math.cos(a) * n.radius * enter;
+    const y3 = Math.sin(a) * n.radius * 0.42 + n.zOff;
+    const z3 = Math.sin(a) * n.radius * 0.5;
+    const persp = 720 / (720 + z3 + 220);
+    const sx = cx + x3 * persp;
+    const sy = cy + y3 * persp;
+    const rad = n.size * persp;
+    ctx.fillStyle = n.accent ? '#FFD600' : '#00E676';
+    ctx.globalAlpha = clamp((0.35 + 0.5 * persp) * alpha, 0, 0.9);
+    ctx.beginPath();
+    ctx.arc(sx, sy, rad, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+};
+
+window.seek(0);
+</script>
+</body>
+</html>
