@@ -316,24 +316,29 @@ class Renderer:
         return pcs[-1] if t >= pcs[-1]['t1'] else pcs[0]
 
     def camera_motion(self, t):
-        """Compound Layer-1 camera kinematics: zoom_push (1.0 -> 1.10), smooth_pan, micro_shake, snap_punch."""
+        """Compound Layer-1 camera kinematics: zoom_push (1.0 -> 1.10 with smooth boundary taper), smooth_pan, micro_shake, snap_punch."""
         mul, dx, dy = 1.0, 0.0, 0.0
         for ck in self.p.get('camera_keys') or ():
             if ck['t0'] - 1e-6 <= t < ck['t1'] - 1e-6:
                 dt = max(0.0, t - ck['t0'])
+                rem = max(0.0, ck['t1'] - t)
                 dur = max(ck['t1'] - ck['t0'], 0.05)
                 u = min(1.0, dt / dur)
+                taper = min(1.0, rem / 0.28)
                 ef = ck.get('effect', 'zoom_push')
                 if ef == 'zoom_push':
-                    mul *= ck.get('from_scale', 1.0) + (ck.get('to_scale', 1.08) - ck.get('from_scale', 1.0)) * bez(u, 0.55, 0.9)
+                    rise = bez(min(1.0, dt / max(0.35, dur - 0.28)), 0.55, 0.9)
+                    env = rise * bez(taper, 0.65, 0.85)
+                    mul *= ck.get('from_scale', 1.0) + (ck.get('to_scale', 1.08) - ck.get('from_scale', 1.0)) * env
                 elif ef == 'snap_punch':
-                    mul *= 1.0 + 0.08 * math.exp(-dt * 8.0) * math.cos(dt * 12.0)
+                    attack = min(1.0, dt / 0.08)
+                    mul *= 1.0 + 0.07 * attack * math.exp(-dt * 7.5) * math.cos(dt * 10.0) * min(1.0, rem / 0.16)
                 elif ef == 'smooth_pan':
-                    dx += math.sin(u * math.pi) * 26.0
+                    dx += math.sin(u * math.pi) * 24.0
                 elif ef == 'micro_shake' and dt < 0.36:
-                    damp = math.exp(-dt * 9.0)
-                    dx += 11.0 * damp * math.sin(dt * 42.0)
-                    dy += 8.0 * damp * math.cos(dt * 37.0)
+                    damp = math.exp(-dt * 9.0) * min(1.0, dt / 0.04)
+                    dx += 10.0 * damp * math.sin(dt * 42.0)
+                    dy += 7.0 * damp * math.cos(dt * 37.0)
         return mul, dx, dy
 
     def presenter(self, t, half=False, base=100.0, matte=None, h=None):

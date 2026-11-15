@@ -79,9 +79,39 @@ jobs:
       - name: Install Python vision, audio, yt-dlp, and Chromium renderer deps
         run: |
           python -m pip install --upgrade pip
-          pip install numpy scipy pillow "yt-dlp[default]" curl_cffi mediapipe rembg onnxruntime playwright
+          pip install numpy scipy pillow fonttools "yt-dlp[default]" curl_cffi mediapipe rembg onnxruntime playwright
           playwright install chromium
           playwright install-deps chromium
+          python - <<'PY'
+          import os
+          from fontTools.ttLib import TTFont
+          from fontTools.varLib.instancer import instantiateVariableFont
+          fdir = os.path.expanduser("~/.local/share/fonts/google-kz")
+          specs = [
+              ("Unbounded-Variable.ttf", 900, "Unbounded Black", "Regular", "Unbounded-Black"),
+              ("Montserrat-Variable.ttf", 800, "Montserrat ExtraBold", "Regular", "Montserrat-ExtraBold"),
+              ("PlayfairDisplay-Italic.ttf", 700, "Playfair Display Bold Italic", "Italic", "PlayfairDisplay-BoldItalic"),
+              ("Cormorant-Italic.ttf", 700, "Cormorant Bold Italic", "Italic", "Cormorant-BoldItalic"),
+              ("JetBrainsMono-Variable.ttf", 800, "JetBrains Mono ExtraBold", "Regular", "JetBrainsMono-ExtraBold"),
+          ]
+          for src_name, wght, fam, sub, ps in specs:
+              src = os.path.join(fdir, src_name)
+              if not os.path.exists(src):
+                  continue
+              try:
+                  tt = TTFont(src)
+                  inst = instantiateVariableFont(tt, {"wght": wght}, inplace=False)
+                  nt = inst["name"]
+                  for nid, val in ((1, fam), (2, sub), (4, f"{fam} {sub}"), (6, ps), (16, fam), (17, sub)):
+                      nt.setName(val, nid, 3, 1, 0x0409)
+                  out_p = os.path.join(fdir, f"{ps}.ttf")
+                  inst.save(out_p)
+                  os.remove(src)
+                  print("Instantiated", out_p)
+              except Exception as e:
+                  print("Font instantiate warn:", src_name, e)
+          PY
+          fc-cache -f
           python -X utf8 .agents/skills/talking-head-kz/scripts/font_check.py --roles || true
 
       - name: Resolve active project and EDL path
@@ -239,7 +269,7 @@ jobs:
           python -X utf8 "$SKILL_DIR/scripts/review_render.py" "$OUT_MASTER" --edl "$EDL_PATH" --out-dir "$PROJECT_DIR/qa/review"
 
       - name: Upload Master MP4, Phone MP4, and QA contact sheets
-        if: steps.resolve.outputs.skip != 'true'
+        if: always() && steps.resolve.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: talking-head-kz-master-reel

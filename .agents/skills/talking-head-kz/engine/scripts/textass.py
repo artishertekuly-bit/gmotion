@@ -34,6 +34,8 @@ SKILL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WIN_KZ_FONTS = ['seguibl.ttf', 'segoeuib.ttf', 'seguisb.ttf', 'segoeui.ttf', 'timesbi.ttf', 'timesbd.ttf', 'timesi.ttf',
                 'palabi.ttf', 'arialbd.ttf', 'consolab.ttf', 'consola.ttf', 'courbd.ttf', 'cour.ttf']
 LINUX_KZ_FONTS = [
+    '/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-ExtraBold.ttf',
+    '/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-Bold.ttf',
     '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
     '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
     '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf',
@@ -88,10 +90,10 @@ def kz_font_sources(extra_dirs=None):
 
 
 _FONT_PREFS = {
-    'impact': ('Unbounded-Black', 'Unbounded-ExtraBold', 'Montserrat-Black', 'RubikWetPaint-Regular', 'SegoeUIBlack', 'NotoSans-Black', 'DejaVuSans-Bold'),
-    'clean': ('Montserrat-ExtraBold', 'Montserrat-Bold', 'Inter-Bold', 'Inter-SemiBold', 'SegoeUI-Bold', 'SegoeUI-Semibold', 'NotoSans-SemiBold', 'LiberationSans-Bold', 'DejaVuSans-Bold'),
-    'editorial': ('PlayfairDisplay-BlackItalic', 'PlayfairDisplay-BoldItalic', 'Cormorant-BoldItalic', 'CormorantGaramond-BoldItalic', 'TimesNewRomanPS-BoldItalicMT', 'PalatinoLinotype-BoldItalic', 'DejaVuSerif-BoldItalic', 'DejaVuSerif-Italic'),
-    'tech': ('JetBrainsMono-ExtraBold', 'JetBrainsMono-Bold', 'Consolas-Bold', 'NotoSansMono-Bold', 'LiberationMono-Bold', 'DejaVuSansMono-Bold'),
+    'impact': ('Unbounded-Black', 'Unbounded-ExtraBold', 'Montserrat-Black', 'Unbounded-Regular', 'SegoeUIBlack', 'NotoSans-Black', 'RubikWetPaint-Regular', 'DejaVuSans-Bold'),
+    'clean': ('Montserrat-ExtraBold', 'Montserrat-Bold', 'Inter-Bold', 'Inter-SemiBold', 'Montserrat-Regular', 'Inter-Regular', 'SegoeUI-Bold', 'SegoeUI-Semibold', 'NotoSans-SemiBold', 'LiberationSans-Bold', 'DejaVuSans-Bold'),
+    'editorial': ('PlayfairDisplay-BlackItalic', 'PlayfairDisplay-BoldItalic', 'Cormorant-BoldItalic', 'PlayfairDisplay-Italic', 'Cormorant-Italic', 'CormorantGaramond-BoldItalic', 'TimesNewRomanPS-BoldItalicMT', 'PalatinoLinotype-BoldItalic', 'DejaVuSerif-BoldItalic', 'DejaVuSerif-Italic'),
+    'tech': ('JetBrainsMono-ExtraBold', 'JetBrainsMono-Bold', 'JetBrainsMono-Regular', 'Consolas-Bold', 'NotoSansMono-Bold', 'LiberationMono-Bold', 'DejaVuSansMono-Bold'),
 }
 
 
@@ -101,6 +103,8 @@ def default_fonts_map():
     for src in kz_font_sources():
         if src and os.path.exists(src):
             try:
+                # Filter out fonts missing Kazakh letters when possible
+                raw = open(src, 'rb').read()
                 for f in faces(src):
                     if f.get('ps'):
                         avail.add(f['ps'])
