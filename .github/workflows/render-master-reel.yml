@@ -130,7 +130,7 @@ jobs:
             START=$(python -c "import json; d=json.load(open('$PROJECT_DIR/podcast_source.json')); print(d.get('start',''))")
             END=$(python -c "import json; d=json.load(open('$PROJECT_DIR/podcast_source.json')); print(d.get('end',''))")
           fi
-          if [ -n "$URL" ] && [ -n "$START" ] && [ -n "$END" ]; then
+          if [ ! -f "$PROJECT_DIR/footage/speaker_raw.mp4" ] && [ -n "$URL" ] && [ -n "$START" ] && [ -n "$END" ]; then
             mkdir -p "$PROJECT_DIR/footage"
             echo "Fetching podcast section *$START-$END from $URL"
             JS_ARG=""
