@@ -64,6 +64,8 @@ jobs:
             ffmpeg \
             libegl1 \
             libgl1 \
+            libgles2 \
+            libglx0 \
             libglib2.0-0 \
             fonts-dejavu-core \
             fonts-noto-core \
