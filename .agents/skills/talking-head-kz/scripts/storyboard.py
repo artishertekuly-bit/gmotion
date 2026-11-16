@@ -251,10 +251,14 @@ def route_mastery_v2(edl, words, project_dir=None, write_custom_scenes=False):
                     elif target_mode == 'full':
                         i['kind'] = 'full'
                         i['layout'] = 'full'
-            # Inject spoken semantic payload fields if missing (Zero-Placeholder Law)
-            for k in ('title', 'subtitle', 'label', 'from', 'to', 'suffix', 'kpis', 'items', 'left_label', 'right_label'):
-                if k not in i and meta.get(k) not in (None, '', []):
-                    i[k] = meta[k]
+            # Inject spoken semantic payload fields cleanly (headline-only for behind_speaker)
+            if i.get('depth') == 'behind_speaker':
+                if 'title' not in i:
+                    i['title'] = ' '.join((meta.get('title') or '').split()[:2]).upper()
+            else:
+                for k in ('title', 'subtitle', 'label', 'from', 'to', 'suffix', 'kpis', 'items', 'left_label', 'right_label'):
+                    if k not in i and meta.get(k) not in (None, '', []):
+                        i[k] = meta[k]
             if write_custom_scenes and project_dir and i.get('kind') in ('full',) and not i.get('html_hook') and not i.get('custom_html_scene'):
                 if meta['metaphor'] in ('call_ui', 'currency_compare', 'process_steps'):
                     i['custom_html_scene'] = generate_custom_html_scene(project_dir, idx, meta)

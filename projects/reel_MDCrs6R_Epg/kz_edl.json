@@ -54,7 +54,7 @@
       "name": "Хабарласу",
       "t0": 6.0,
       "t1": 13.9,
-      "preset": "lemo_isometric_system",
+      "preset": "halftone_cutout_backsplash",
       "animations": [
         {
           "layer": "camera",
@@ -95,7 +95,7 @@
       "name": "Шок · Феномен",
       "t0": 13.9,
       "t1": 19.8,
-      "preset": "halftone_cutout_backsplash",
+      "preset": "pixelfx_energy_shader",
       "animations": [
         {
           "layer": "camera",
@@ -177,7 +177,7 @@
       "name": "Доллар мен Теңге",
       "t0": 29.2,
       "t1": 39.6,
-      "preset": "graffiti_circle_callout",
+      "preset": "opus_bento_grid_stats",
       "animations": [
         {
           "layer": "camera",
@@ -425,7 +425,14 @@
         112,
         160
       ],
-      "sfx": "whoosh"
+      "sfx": "whoosh",
+      "items": [
+        "КҮНІНЕ",
+        "МИЛЛИОН",
+        "ТАУЫП"
+      ],
+      "left_label": "КҮНІНЕ",
+      "right_label": "МЕН"
     },
     {
       "id": "hook_b2_call_story",
@@ -438,7 +445,31 @@
       "title": "ХАБАРЛАСТЫ",
       "subtitle": "СЕНБЕЙ ҚАЛДЫМ",
       "spoken_words": "осылай болу керек па деймін. Неге ондай болмаған дейді. Мынау бірінші рет бізде дейді",
-      "sfx": "pop"
+      "sfx": "pop",
+      "label": "ХАБАРЛАСУ",
+      "from": 0,
+      "to": 0,
+      "kpis": [
+        {
+          "label": "СОНЫ",
+          "val": "СОНЫ"
+        },
+        {
+          "label": "ХАБАРЛАСАМ",
+          "val": "ХАБАРЛАС"
+        },
+        {
+          "label": "ОСЫЛАЙ",
+          "val": "ОСЫЛАЙ"
+        }
+      ],
+      "items": [
+        "СОНЫ",
+        "ХАБАРЛАСАМ",
+        "ОСЫЛАЙ"
+      ],
+      "left_label": "СОНЫ",
+      "right_label": "КИНОСЫНДА"
     },
     {
       "id": "hook_b3_phenomenon_head",
@@ -464,7 +495,31 @@
       "title": "НЕ АЛУҒА БОЛАДЫ?",
       "left_label": "КҮМӘН",
       "right_label": "160 МЛН ₸",
-      "sfx": "whoosh"
+      "sfx": "whoosh",
+      "subtitle": "160 миллион күніне Ол 160",
+      "label": "НЕ АЛУҒА БОЛАДЫ?",
+      "from": 0,
+      "to": 160,
+      "suffix": " МЛН ₸",
+      "kpis": [
+        {
+          "label": "160",
+          "val": "160 МЛН ₸"
+        },
+        {
+          "label": "МИЛЛИОН",
+          "val": "МИЛЛИОН"
+        },
+        {
+          "label": "КҮНІНЕ",
+          "val": "КҮНІНЕ"
+        }
+      ],
+      "items": [
+        "МИЛЛИОН",
+        "КҮНІНЕ",
+        "МИЛЛИОН"
+      ]
     },
     {
       "id": "hook_b5_currency_full",
@@ -480,7 +535,28 @@
         "ТЕҢГЕ"
       ],
       "spoken_words": "Қазірде доллар мен",
-      "sfx": "whoosh"
+      "sfx": "whoosh",
+      "subtitle": "Қазірде доллар мен басқа елдің",
+      "label": "ДОЛЛАР МЕН ТЕҢГЕ",
+      "from": 0,
+      "to": 0,
+      "suffix": " ₸",
+      "kpis": [
+        {
+          "label": "ҚАЗІРДЕ",
+          "val": "ҚАЗІРДЕ"
+        },
+        {
+          "label": "ДОЛЛАР",
+          "val": "ДОЛЛАР"
+        },
+        {
+          "label": "БАСҚА",
+          "val": "БАСҚА"
+        }
+      ],
+      "left_label": "ҚАЗІРДЕ",
+      "right_label": "ДА"
     },
     {
       "id": "hook_b6_dossier_split",
@@ -494,7 +570,32 @@
       "label": "БАҒА ТАЛДАУЫ",
       "subtitle": "САЛЫСТЫРУ",
       "stamp": "ТЕКСЕРІЛДІ",
-      "sfx": "pop"
+      "sfx": "pop",
+      "from": 0,
+      "to": 0,
+      "suffix": " ₸",
+      "kpis": [
+        {
+          "label": "ТЕҢГЕГЕ",
+          "val": "ТЕҢГЕГЕ"
+        },
+        {
+          "label": "ШАҚПАЙ",
+          "val": "ШАҚПАЙ"
+        },
+        {
+          "label": "ҚАНША",
+          "val": "ҚАНША"
+        }
+      ],
+      "items": [
+        "ТЕҢГЕГЕ",
+        "ШАҚПАЙ",
+        "ҚАНША"
+      ],
+      "left_label": "ТЕҢГЕГЕ",
+      "right_label": "СӨЙТЕМ",
+      "custom_html_scene": "motion_hooks/scene_b6_currency_compare.html"
     },
     {
       "id": "hook_b7_pixelfx_full",
@@ -506,7 +607,31 @@
       "t1": 51.4,
       "title": "ЖОҚШЫЛЫҚТАН СТРАХ",
       "subtitle": "ТӘУЕКЕЛ МЕН ЖЕҢІС",
-      "sfx": "glitch"
+      "sfx": "glitch",
+      "label": "ЖОҚШЫЛЫҚТАН СТРАХ",
+      "from": 0,
+      "to": 0,
+      "kpis": [
+        {
+          "label": "СТРАХ",
+          "val": "СТРАХ"
+        },
+        {
+          "label": "ЖОҚШЫЛЫҚТАН",
+          "val": "ЖОҚШЫЛЫҚ"
+        },
+        {
+          "label": "СТРАХ",
+          "val": "СТРАХ"
+        }
+      ],
+      "items": [
+        "СТРАХ",
+        "ЖОҚШЫЛЫҚТАН",
+        "СТРАХ"
+      ],
+      "left_label": "СТРАХ",
+      "right_label": "БАР"
     }
   ],
   "text": [
@@ -1492,7 +1617,7 @@
       "beat": 2,
       "t0": 6.0,
       "t1": 13.9,
-      "preset": "lemo_isometric_system",
+      "preset": "halftone_cutout_backsplash",
       "camera_motion": "slow_push_in",
       "animations": [
         {
@@ -1532,7 +1657,7 @@
       "beat": 3,
       "t0": 13.9,
       "t1": 19.8,
-      "preset": "halftone_cutout_backsplash",
+      "preset": "pixelfx_energy_shader",
       "camera_motion": "speaker_whip_pan",
       "animations": [
         {
@@ -1612,7 +1737,7 @@
       "beat": 5,
       "t0": 29.2,
       "t1": 39.6,
-      "preset": "graffiti_circle_callout",
+      "preset": "opus_bento_grid_stats",
       "camera_motion": "dramatic_pull_out",
       "animations": [
         {
