@@ -119,10 +119,12 @@ prints (size, fps, duration, loudness).
 - `scripts/clip_sheet.py` - frames and hard-cut times of candidate clips.
 - `references/renderer.md` - how the renderer works, speed, fonts, troubleshooting.
 
-## Ground rules
+## Ground rules (Autonomous Expertise)
 
-- Footage: use only material the user has rights to - their own, licensed or free-licensed stock,
-  or clips generated for them. Generated people must not look like real actors or celebrities, and
-  no famous characters, costumes, logos or film scenes may be recreated.
+- **Layout Quota Rule:** Never produce an `overlay`-only reel. Target `split` (`30–35%`, >=2 inserts), `full` (`25–30%`, >=2 inserts), `cards`/`cutout`/`flood` (`20–25%`), and cap `behind_speaker` at `<=15%` (hard compiler failure above `20%`, headline-only `>=160px`).
+- **Zero-Placeholder Rule:** Static template strings (`88%`, `НЕГІЗГІ КӨРСЕТКІШ`, `TODO`, `example`) fail `validate_edl.py`. Every HTML hook consumes live `window.EDL_PAYLOAD` derived from spoken words.
+- **2–4 Compound Animations & Camera Dynamics:** Every beat defines `[2..4]` stacked animation layers including explicit `camera_motion` (`punch_in`, `slow_push_in`, `dramatic_pull_out`, `speaker_whip_pan`, `handheld_breathing`).
+- **Multi-Speaker Focus:** `vision_py.py` tracks up to 3 faces (`num_faces=3`) with `0.5s` MAR lip-variance switching (`instant cut` on hard cuts, `0.35s easeOutCubic whip-pan` on shared framing).
+- **Footage & Ownership:** Use only material the user has rights to - their own, licensed or free-licensed stock, or custom procedural HTML/Canvas/3D story scenes. Generated people must not look like real actors or celebrities.
 - Every render is a new file. Never overwrite something the user has reviewed.
 - Work in English in the project files; talk to the user in their language.

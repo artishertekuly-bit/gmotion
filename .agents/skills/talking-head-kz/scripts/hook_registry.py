@@ -6,6 +6,8 @@ Shared across `storyboard.py`, `variants.py`, `render_hooks_chromium.py`, `capti
 and anti-repeat constraints.
 """
 
+import re
+
 CAPTION_FORMATS = (
     'asymmetric_bento_stack',
     'graffiti_underline_strike',
@@ -17,6 +19,24 @@ CAPTION_FORMATS = (
     'whisper_glitch_box',
 )
 
+CAMERA_PRESETS = (
+    'punch_in',
+    'slow_push_in',
+    'dramatic_pull_out',
+    'speaker_whip_pan',
+    'handheld_breathing',
+)
+
+VALID_CAMERA_EFFECTS = set(CAMERA_PRESETS) | {
+    'zoom_in', 'zoom_out', 'zoom_push', 'smooth_pan', 'whip_pan', 'micro_shake', 'snap_punch',
+}
+
+BANNED_PLACEHOLDERS = (
+    '88%', 'негізгі көрсеткіш', 'жасырын кейс #01', 'рекордтық динамика',
+    'күшті инсайт', 'алгоритм және процесс', 'өсім динамикасы',
+    'todo', 'placeholder', 'lorem ipsum', 'live simulation',
+)
+
 LAYER_ROLES = ('camera', 'depth', 'graphic', 'type_audio')
 
 HOOK_CATALOG = {
@@ -24,109 +44,121 @@ HOOK_CATALOG = {
         'source': 'rossark + frazix',
         'html': 'assets/hooks/frazix_dossier_hook.html',
         'assets': ['assets/frazix/frazix_dossier_card.png', 'assets/frazix/frazix_barcode.png', 'assets/frazix/frazix_dotgrid.png'],
-        'depth': 'behind_speaker',
+        'depth': 'full',
+        'layout_default': 'split',
         'default_sfx': 'whoosh',
         'keywords': ('тұлға', 'құпия', 'кейс', 'факт', 'досье', 'кім', 'директор', 'актриса', 'продюсер', 'хабарлас', 'кісі', 'личность', 'секрет'),
-        'camera_default': 'zoom_push',
+        'camera_default': 'slow_push_in',
     },
     'graffiti_fact_explosion': {
         'source': 'rossark + graffiti',
         'html': 'assets/hooks/graffiti_fact_explosion.html',
         'assets': ['assets/graffiti/badge_fakt.png', 'assets/graffiti/badge_erezhe.png', 'assets/graffiti/torn_paper_strip.png', 'assets/graffiti/arrow_red_loop.png'],
-        'depth': 'behind_speaker',
+        'depth': 'full',
+        'layout_default': 'full',
         'default_sfx': 'pop',
         'keywords': ('ереже', 'факт', 'заң', 'шындық', 'қағида', 'бірінші рет', 'правило', 'доказано'),
-        'camera_default': 'micro_shake',
+        'camera_default': 'punch_in',
     },
     'threejs_3d_floating_totem': {
         'source': 'three.js + 3d',
         'html': 'assets/hooks/threejs_3d_floating_totem.html',
         'assets': ['assets/3d/card_3d_bakyt.png', 'assets/3d/compass_3d_gold.png', 'assets/frazix/frazix_sparkle_gold.png'],
-        'depth': 'behind_speaker',
+        'depth': 'full',
+        'layout_default': 'full',
         'default_sfx': 'hit',
         'keywords': ('бағыт', 'арман', 'бақыт', 'жол', 'мақсат', 'направление', 'компас', 'болашақ'),
-        'camera_default': 'smooth_pan',
+        'camera_default': 'speaker_whip_pan',
     },
     'lemo_ink_wash_history': {
         'source': 'lemo-opuscar',
         'html': 'assets/hooks/lemo_ink_wash_history.html',
         'assets': ['engine/assets/textures/halftone_1080x1920.png'],
-        'depth': 'behind_speaker',
+        'depth': 'full',
+        'layout_default': 'full',
         'default_sfx': 'thud',
         'keywords': ('тарих', 'мәдениет', 'жыл', 'ғасыр', 'балалық', 'жоқшылық', 'естелік', 'философия', 'ой', 'история'),
-        'camera_default': 'smooth_pan',
+        'camera_default': 'dramatic_pull_out',
     },
     'lemo_isometric_system': {
         'source': 'lemo-opuscar + opus-video-prompts',
         'html': 'assets/hooks/lemo_isometric_system.html',
         'assets': ['assets/frazix/frazix_dotgrid.png'],
-        'depth': 'behind_speaker',
+        'depth': 'full',
+        'layout_default': 'split',
         'default_sfx': 'tick',
         'keywords': ('жүйе', 'бизнес', 'алгоритм', 'процесс', 'схема', 'жоба', 'технология', 'механизм', 'система', 'касса'),
-        'camera_default': 'zoom_push',
+        'camera_default': 'slow_push_in',
     },
     'reanimate_state_morph': {
         'source': 'reanimate',
         'html': 'assets/hooks/reanimate_state_morph.html',
         'assets': [],
-        'depth': 'behind_speaker',
+        'depth': 'full',
+        'layout_default': 'split',
         'default_sfx': 'whoosh',
         'keywords': ('бұрын', 'қазір', 'қате', 'дұрыс', 'салыстыр', 'теңге', 'доллар', 'шаққанда', 'қарсы', 'өзгер', 'было', 'стало'),
-        'camera_default': 'zoom_push',
+        'camera_default': 'punch_in',
     },
     'pixelfx_energy_shader': {
         'source': 'pixelfx',
         'html': 'assets/hooks/pixelfx_energy_shader.html',
         'assets': ['assets/frazix/frazix_sparkle_red.png'],
-        'depth': 'behind_speaker',
+        'depth': 'full',
+        'layout_default': 'full',
         'default_sfx': 'hit',
         'keywords': ('шок', 'страх', 'қорқыныш', 'найзағай', 'жарылыс', 'эмоция', 'күй', 'феномен', 'инсайт', 'қатты'),
-        'camera_default': 'micro_shake',
+        'camera_default': 'punch_in',
     },
     'opus_bento_grid_stats': {
         'source': 'awesome-opus5-5-videos + opus-video-prompts',
         'html': 'assets/hooks/opus_bento_grid_stats.html',
         'assets': ['assets/frazix/frazix_dotgrid.png'],
-        'depth': 'behind_speaker',
+        'depth': 'full',
+        'layout_default': 'split',
         'default_sfx': 'pop',
-        'keywords': ('миллион', 'миллиард', 'млн', 'млрд', 'пайыз', '%', 'ақша', 'табыс', 'күніне', 'сана', 'қанша', '160'),
-        'camera_default': 'zoom_push',
+        'keywords': ('миллион', 'миллиард', 'млн', 'млрд', 'пайыз', '%', 'ақша', 'табыс', 'күніне', 'сана', 'қанша'),
+        'camera_default': 'slow_push_in',
     },
     'halftone_cutout_backsplash': {
         'source': 'presenter_mattes + halftone',
         'html': 'assets/hooks/halftone_cutout_backsplash.html',
         'assets': ['engine/assets/textures/halftone_1080x1920.png'],
         'depth': 'behind_speaker',
+        'layout_default': 'behind_speaker',
         'default_sfx': 'hit',
         'keywords': ('рекорд', 'неге', 'қалай', 'маңызды', 'назар', 'басты', 'ұмытпа', 'қазақ', 'кино'),
-        'camera_default': 'zoom_push',
+        'camera_default': 'handheld_breathing',
     },
     'graffiti_circle_callout': {
         'source': 'graffiti',
         'html': 'assets/hooks/graffiti_circle_callout.html',
         'assets': ['assets/graffiti/oval_red.png', 'assets/graffiti/oval_cyan.png', 'assets/graffiti/underline_yellow.png'],
-        'depth': 'front_callout',
+        'depth': 'full',
+        'layout_default': 'split',
         'default_sfx': 'tick',
         'keywords': ('қара', 'мына', 'дәл', 'нақты', 'ерекше', 'көр', 'қымбат', 'не алу', 'келеді'),
-        'camera_default': 'smooth_pan',
+        'camera_default': 'speaker_whip_pan',
     },
     'split_60_40_simulation': {
         'source': 'three.js + reanimate',
         'html': 'assets/hooks/split_60_40_simulation.html',
         'assets': [],
-        'depth': 'behind_speaker',
+        'depth': 'full',
+        'layout_default': 'split',
         'default_sfx': 'whoosh',
         'keywords': ('өсім', 'график', 'тренд', 'симуляция', 'динамика', 'статистика', 'нәтиже', 'бірте'),
-        'camera_default': 'smooth_pan',
+        'camera_default': 'dramatic_pull_out',
     },
     'retro_terminal_decrypt': {
         'source': 'lemo-opuscar + frazix',
         'html': 'assets/hooks/retro_terminal_decrypt.html',
         'assets': ['assets/frazix/frazix_barcode.png'],
-        'depth': 'behind_speaker',
+        'depth': 'full',
+        'layout_default': 'split',
         'default_sfx': 'glitch',
         'keywords': ('код', 'шифр', 'дерек', 'құпия', 'жасырын', 'терминал', 'білмеймін', 'түсінбед', 'вообще', 'секрет'),
-        'camera_default': 'micro_shake',
+        'camera_default': 'handheld_breathing',
     },
 }
 
@@ -179,17 +211,69 @@ def pick_hook_preset(text='', beat_name='', last_used_styles=None, fallback_idx=
     return chosen
 
 
-def build_compound_keyframes(t0, t1, preset=None, caption_format='word_by_word_pop', sfx='pop', role_index=0, include_depth=True):
-    """Build a valid 2..4 layer Compound Keyframe Stack for a beat or active EDL segment."""
-    cam_choices = ('zoom_push', 'smooth_pan', 'micro_shake')
-    cam = (HOOK_CATALOG.get(preset, {}).get('camera_default') if preset else None) or cam_choices[role_index % len(cam_choices)]
-    cam_anim = {'layer': 'camera', 'effect': cam, 't0': round(t0, 3), 't1': round(t1, 3)}
-    if cam == 'zoom_push':
-        cam_anim.update({'from': 1.0, 'to': 1.04})
-    elif cam == 'smooth_pan':
-        cam_anim.update({'pan_px': 22 if role_index % 2 == 0 else -22})
+def extract_transcript_metaphor(said='', beat_name=''):
+    """Transcript Metaphor Extraction: turn exact Kazakh spoken tokens into non-placeholder scene payload."""
+    txt = (said or '').strip()
+    low = (beat_name + ' ' + txt).lower()
+    words = [w.strip('.,!?;:«»"()') for w in txt.split() if w.strip('.,!?;:«»"()')]
+    nums = [float(n.replace(',', '.')) for n in re.findall(r'\d+(?:[.,]\d+)?', txt)]
+    headline = (beat_name or ' '.join(words[:3])).strip()
+    subtitle = ' '.join(words[:5]) if words else headline
+
+    # Detect metaphor from spoken words
+    if any(k in low for k in ('хабарлас', 'қоңырау', 'звон', 'телефон', 'айтты', 'сұра')):
+        metaphor = 'call_ui'
+    elif any(k in low for k in ('доллар', 'теңге', 'валют', 'курс', 'шаққанда', 'қымбат')):
+        metaphor = 'currency_compare'
+    elif nums or any(k in low for k in ('миллион', 'миллиард', 'млн', 'млрд', 'пайыз', '%', 'ақша', 'табыс')):
+        metaphor = 'number_stats'
+    elif any(k in low for k in ('бұрын', 'қазір', 'бірақ', 'ал ', 'не ', 'қарсы', 'алуға')):
+        metaphor = 'state_contrast'
+    elif any(k in low for k in ('страх', 'қорқыныш', 'шок', 'жоқшылық', 'ашу', 'эмоция', 'феномен')):
+        metaphor = 'emotion_shock'
     else:
-        cam_anim.update({'amp_px': 6, 'dur': 0.24})
+        metaphor = 'process_steps'
+
+    val_to = int(nums[0]) if nums and nums[0].is_integer() else (nums[0] if nums else 0)
+    suf = ' МЛН ₸' if any(k in low for k in ('миллион', 'млн')) else ('%' if '%' in txt else (' ₸' if 'теңге' in low else ''))
+    # Pull up to 3 meaningful tokens (>3 chars) for step/item displays
+    key_tokens = [w.upper() for w in words if len(w) >= 4][:3] or [w.upper() for w in words[:3]]
+    kpis = []
+    if val_to:
+        kpis.append({'label': words[0].upper() if words else headline[:10].upper(), 'val': f'{val_to}{suf}'})
+    for kt in key_tokens:
+        if len(kpis) < 3:
+            kpis.append({'label': kt[:12], 'val': kt[:8]})
+    return dict(
+        metaphor=metaphor,
+        title=headline[:28],
+        subtitle=subtitle[:42],
+        label=(beat_name or (words[0] if words else '')).upper()[:24],
+        spoken_words=txt,
+        **{'from': 0},
+        to=val_to,
+        suffix=suf,
+        kpis=kpis,
+        items=key_tokens,
+        left_label=(words[0].upper() if words else ''),
+        right_label=(words[-1].upper() if len(words) > 1 else ''),
+    )
+
+
+def build_compound_keyframes(t0, t1, preset=None, caption_format='word_by_word_pop', sfx='pop', role_index=0, include_depth=True):
+    """Build a valid 2..4 layer Compound Keyframe Stack with explicit Module 3 camera presets."""
+    cam = (HOOK_CATALOG.get(preset, {}).get('camera_default') if preset else None) or CAMERA_PRESETS[role_index % len(CAMERA_PRESETS)]
+    cam_anim = {'layer': 'camera', 'effect': cam, 't0': round(t0, 3), 't1': round(t1, 3)}
+    if cam == 'punch_in':
+        cam_anim.update({'from': 1.0, 'to': 1.24})
+    elif cam == 'slow_push_in':
+        cam_anim.update({'from': 1.0, 'to': 1.18})
+    elif cam == 'dramatic_pull_out':
+        cam_anim.update({'from': 1.24, 'to': 1.00})
+    elif cam == 'speaker_whip_pan':
+        cam_anim.update({'from': 1.08, 'to': 1.16, 'pan_px': 28 if role_index % 2 == 0 else -28})
+    else:
+        cam_anim.update({'from': 1.0, 'to': 1.03})
 
     stack = [cam_anim]
     if include_depth:
@@ -222,7 +306,6 @@ def balance_keyframe_stack(animations, t0=0.0, t1=2.0, role_index=0):
     items = [dict(a) for a in (animations or []) if isinstance(a, dict)]
     notes = []
 
-    # Trim >4 down to 4 keeping distinct layer roles first
     if len(items) > 4:
         kept, seen = [], set()
         for a in items:
@@ -238,11 +321,11 @@ def balance_keyframe_stack(animations, t0=0.0, t1=2.0, role_index=0):
         notes.append('clamped %d -> %d layers (max 4)' % (len(items), len(kept[:4])))
         items = kept[:4]
 
-    # Expand <2 up to 2..3 complementary layers
     if len(items) < 2:
         existing_roles = {a.get('layer') for a in items}
         if 'camera' not in existing_roles:
-            items.insert(0, {'layer': 'camera', 'effect': 'zoom_push', 'from': 1.0, 'to': 1.04, 't0': round(t0, 3), 't1': round(t1, 3)})
+            cam = CAMERA_PRESETS[role_index % len(CAMERA_PRESETS)]
+            items.insert(0, {'layer': 'camera', 'effect': cam, 'from': 1.0, 'to': 1.18 if cam == 'slow_push_in' else 1.24, 't0': round(t0, 3), 't1': round(t1, 3)})
         if len(items) < 2 and 'type_audio' not in existing_roles:
             items.append({'layer': 'type_audio', 'caption_format': 'word_by_word_pop', 'sfx': 'pop', 't0': round(t0, 3), 't1': round(t1, 3)})
         if len(items) < 2 and 'depth' not in existing_roles:

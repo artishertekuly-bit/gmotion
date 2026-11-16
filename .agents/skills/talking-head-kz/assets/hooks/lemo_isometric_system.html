@@ -4,51 +4,43 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
 <title>5. lemo_isometric_system</title>
-<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent;}canvas{display:block;}</style>
 <script src="_hook_core.js"></script>
 </head>
 <body>
-<canvas id="stage" width="1080" height="1920"></canvas>
+<canvas id="stage"></canvas>
 <script>
-// lemo-opuscar + opus-video-prompts isometric pipeline cubes + flowing nodes
+// Parametrized Isometric Process Nodes driven by EDL_PAYLOAD items[] / spoken_words
 HookCore.initStage((ctx, t, imgs, cfg) => {
-  const { W, clamp, seg, springPhys, envelope, drawAsset } = HookCore;
+  const { clamp, seg, springPhys, envelope, drawAsset, drawStageBackdrop, deriveText } = HookCore;
   const { alpha } = envelope(t, cfg.dur);
   if (alpha <= 0.005) return;
 
-  drawAsset(ctx, imgs.dotgrid, W / 2, 380, 960, 0, 0.28 * alpha);
+  drawStageBackdrop(ctx, cfg.W, cfg.H, cfg, t);
+  const { title, tokens } = deriveText(cfg);
+  drawAsset(ctx, imgs.dotgrid, cfg.W / 2, cfg.cy, 960, 0, 0.28 * alpha);
 
   function isoCube(cx, cy, s, h, colTop, colL, colR, lift) {
     const dx = s * 0.866, dy = s * 0.5;
     const y = cy - lift;
     ctx.save();
-    // Left
-    ctx.beginPath();
-    ctx.moveTo(cx, y); ctx.lineTo(cx - dx, y - dy); ctx.lineTo(cx - dx, y - dy + h); ctx.lineTo(cx, y + h);
-    ctx.closePath(); ctx.fillStyle = colL; ctx.fill();
-    // Right
-    ctx.beginPath();
-    ctx.moveTo(cx, y); ctx.lineTo(cx + dx, y - dy); ctx.lineTo(cx + dx, y - dy + h); ctx.lineTo(cx, y + h);
-    ctx.closePath(); ctx.fillStyle = colR; ctx.fill();
-    // Top
-    ctx.beginPath();
-    ctx.moveTo(cx, y); ctx.lineTo(cx + dx, y - dy); ctx.lineTo(cx, y - dy * 2); ctx.lineTo(cx - dx, y - dy);
-    ctx.closePath(); ctx.fillStyle = colTop; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - dx, y - dy); ctx.lineTo(cx - dx, y - dy + h); ctx.lineTo(cx, y + h); ctx.closePath(); ctx.fillStyle = colL; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + dx, y - dy); ctx.lineTo(cx + dx, y - dy + h); ctx.lineTo(cx, y + h); ctx.closePath(); ctx.fillStyle = colR; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + dx, y - dy); ctx.lineTo(cx, y - dy * 2); ctx.lineTo(cx - dx, y - dy); ctx.closePath(); ctx.fillStyle = colTop; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2; ctx.stroke();
     ctx.restore();
   }
 
-  ctx.save();
-  ctx.globalAlpha = alpha;
+  const rawItems = Array.isArray(cfg.items) && cfg.items.length ? cfg.items : tokens.slice(0, 3);
+  const labels = [0, 1, 2].map(i => String(rawItems[i] || '').toUpperCase().slice(0, 14));
   const nodes = [
-    { x: 250, y: 420, label: 'ДЕРЕК' },
-    { x: 540, y: 340, label: 'ЖҮЙЕ' },
-    { x: 830, y: 420, label: 'НӘТИЖЕ' },
+    { x: 240, y: cfg.cy + 40, label: labels[0] },
+    { x: 540, y: cfg.cy - 40, label: labels[1] },
+    { x: 840, y: cfg.cy + 40, label: labels[2] },
   ];
 
-  // Connecting isometric flow beams
+  ctx.save();
+  ctx.globalAlpha = alpha;
   const beamP = clamp(seg(t, 0.15, 0.85));
   ctx.strokeStyle = cfg.accent2;
   ctx.lineWidth = 5;
@@ -67,22 +59,26 @@ HookCore.initStage((ctx, t, imgs, cfg) => {
     const bob = Math.sin(t * 2.4 + idx * 1.1) * 8;
     const active = idx === 1;
     isoCube(
-      n.x, n.y + 40, 74 * (0.88 + 0.12 * sp), 58 * sp,
+      n.x, n.y + 40, 76 * (0.88 + 0.12 * sp), 58 * sp,
       active ? cfg.accent : '#263238',
       active ? '#C69D00' : '#182026',
       active ? '#9E7B00' : '#10151A',
       bob
     );
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'center';
-    ctx.font = '800 26px "JetBrains Mono", monospace';
-    ctx.fillText(n.label, n.x, n.y + 115);
+    if (n.label) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.font = '800 26px "JetBrains Mono", monospace';
+      ctx.fillText(n.label, n.x, n.y + 120);
+    }
   });
 
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 40px "Unbounded", "Montserrat", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText((cfg.title || 'АЛГОРИТМ ЖӘНЕ ПРОЦЕСС').toUpperCase().slice(0, 26), W / 2, 195);
+  if (title) {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '900 42px "Unbounded", "Montserrat", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(title.toUpperCase().slice(0, 26), cfg.W / 2, cfg.cy - 205);
+  }
   ctx.restore();
 }, {
   dotgrid: '../frazix/frazix_dotgrid.png',

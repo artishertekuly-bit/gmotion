@@ -45,7 +45,9 @@ def main():
     print('2/3 Vision face track + person segmentation', flush=True)
     faces_path = os.path.join(P, 'analysis', 'faces.jsonl')
     raw_path = os.path.join(P, 'analysis', 'person_raw.mov')
-    tr = subprocess.Popen(tool_cmd('person_track') + [proxy, faces_path, str(mw), str(mh)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    pt_cmd = tool_cmd('person_track')
+    pt_args = pt_cmd + [proxy, faces_path, str(mw), str(mh)] + ([str(fps)] if any('vision_py.py' in str(x) for x in pt_cmd) else [])
+    tr = subprocess.Popen(pt_args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     wr = write_gray_prores(ff, mw, mh, fps, raw_path)
     while True:
         b = tr.stdout.read(mw * mh)

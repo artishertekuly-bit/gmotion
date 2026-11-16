@@ -4,39 +4,35 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
 <title>7. pixelfx_energy_shader</title>
-<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent;}canvas{display:block;}</style>
 <script src="_hook_core.js"></script>
 </head>
 <body>
-<canvas id="stage" width="1080" height="1920"></canvas>
+<canvas id="stage"></canvas>
 <script>
-// pixelfx procedural lightning strike (3-pulse flicker [1,0.72,0.3,0.95,0.5,0.8,0.22]) + 4x4 Bayer ordered dither + ballistic sparks
+// Procedural lightning + 4x4 Bayer ordered dither + ballistic sparks driven by EDL_PAYLOAD
 HookCore.initStage((ctx, t, imgs, cfg) => {
-  const { W, H, clamp, springPhys, mulberry32, envelope, drawAsset } = HookCore;
+  const { clamp, springPhys, mulberry32, envelope, drawAsset, drawStageBackdrop, deriveText } = HookCore;
   const { alpha } = envelope(t, cfg.dur);
   if (alpha <= 0.005) return;
 
+  drawStageBackdrop(ctx, cfg.W, cfg.H, cfg, t);
+  const { title, subtitle } = deriveText(cfg);
   const flicker = [1, 0.72, 0.3, 0.95, 0.5, 0.8, 0.22];
-  const fIdx = Math.floor(t * 24) % flicker.length;
-  const flash = flicker[fIdx];
+  const flash = flicker[Math.floor(t * 24) % flicker.length];
   const sp = springPhys(t, 220, 18);
 
-  // 4x4 Bayer ordered dither energy band upper half
-  const bayer4 = [
-    0, 8, 2, 10,
-    12, 4, 14, 6,
-    3, 11, 1, 9,
-    15, 7, 13, 5,
-  ];
+  const bayer4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
   ctx.save();
-  ctx.globalAlpha = alpha * 0.42;
+  ctx.globalAlpha = alpha * 0.44;
   const cell = 14;
-  for (let y = 160; y < 740; y += cell) {
-    const grad = Math.sin((y - 160) / 580 * Math.PI);
+  const y0 = Math.max(40, cfg.cy - 280), y1 = Math.min(cfg.H - 40, cfg.cy + 280);
+  for (let y = y0; y < y1; y += cell) {
+    const grad = Math.sin((y - y0) / Math.max(y1 - y0, 1) * Math.PI);
     for (let x = 80; x < 1000; x += cell) {
       const bi = ((Math.floor(x / cell) & 3) + ((Math.floor(y / cell) & 3) << 2));
       const thresh = bayer4[bi] / 16;
-      const dist = Math.hypot(x - W / 2, y - 420) / 480;
+      const dist = Math.hypot(x - cfg.W / 2, y - cfg.cy) / 480;
       if (grad * (1 - dist) * flash > thresh * 0.85) {
         ctx.fillStyle = (x + y) % 28 === 0 ? cfg.accent : cfg.danger;
         ctx.fillRect(x, y, cell - 4, cell - 4);
@@ -44,7 +40,6 @@ HookCore.initStage((ctx, t, imgs, cfg) => {
     }
   }
 
-  // Stepped zigzag lightning strike
   const rng = mulberry32(99 + Math.floor(t * 8));
   ctx.globalAlpha = clamp(flash * alpha * sp);
   ctx.strokeStyle = cfg.accent;
@@ -53,33 +48,39 @@ HookCore.initStage((ctx, t, imgs, cfg) => {
   ctx.shadowBlur = 18;
   for (const sx of [240, 840]) {
     ctx.beginPath();
-    let px = sx, py = 120;
+    let px = sx, py = Math.max(40, cfg.cy - 260);
     ctx.moveTo(px, py);
     for (let s = 0; s < 8; s++) {
       px += (rng() - 0.5) * 90;
-      py += 75;
+      py += 68;
       ctx.lineTo(px, py);
     }
     ctx.stroke();
   }
 
-  // Ballistic closed-form sparks (fly with drag k & gravity g)
   const srng = mulberry32(777);
   for (let i = 0; i < 24; i++) {
     const vx = (srng() - 0.5) * 620;
     const vy = -180 - srng() * 380;
     const drag = 1 - Math.exp(-2.2 * t);
-    const sx = W / 2 + (vx / 2.2) * drag;
-    const sy = 500 + (vy / 2.2) * drag + 0.5 * 460 * t * t;
-    if (sy > 0 && sy < 900) {
+    const sx = cfg.W / 2 + (vx / 2.2) * drag;
+    const sy = cfg.cy + 60 + (vy / 2.2) * drag + 0.5 * 460 * t * t;
+    if (sy > 0 && sy < cfg.H) {
       drawAsset(ctx, imgs.sparkle, sx, sy, 26, 0, clamp(1 - t / cfg.dur) * alpha, t * 4 + i);
     }
   }
 
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 54px "Unbounded", "Montserrat", sans-serif';
-  ctx.fillText((cfg.title || 'КҮШТІ ИНСАЙТ').toUpperCase().slice(0, 18), W / 2, 245);
+  if (title) {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '900 58px "Unbounded", "Montserrat", sans-serif';
+    ctx.fillText(title.toUpperCase().slice(0, 20), cfg.W / 2, cfg.cy - 10);
+  }
+  if (subtitle) {
+    ctx.fillStyle = cfg.accent;
+    ctx.font = 'italic 700 34px "Playfair Display", serif';
+    ctx.fillText(subtitle.slice(0, 32), cfg.W / 2, cfg.cy + 58);
+  }
   ctx.restore();
 }, {
   sparkle: '../frazix/frazix_sparkle_red.png',

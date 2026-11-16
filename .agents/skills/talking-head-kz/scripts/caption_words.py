@@ -172,7 +172,7 @@ def caption_items_60_40(
 
         # 7) slot_machine_counter on numeric tokens
         m = NUM_RE.match(bare)
-        if m:
+        if m and last_fmt != 'slot_machine_counter':
             raw_num = m.group(1).replace(',', '.')
             val = float(raw_num) if '.' in raw_num else int(raw_num)
             suf = m.group(2) or ''
@@ -198,7 +198,7 @@ def caption_items_60_40(
             continue
 
         # 1) asymmetric_bento_stack in stack/emphasis windows
-        if in_stack and i + 2 < len(groups):
+        if in_stack and i + 2 < len(groups) and last_fmt != 'asymmetric_bento_stack':
             tri = groups[i:i + 3]
             end = nxt_start(i + 3, tri[-1]['e'] + hold)
             fmt = 'asymmetric_bento_stack'
@@ -227,7 +227,7 @@ def caption_items_60_40(
             continue
 
         # 8) whisper_glitch_box after pauses / intrigue beats
-        if gap_before >= 0.45 and i + 1 < len(groups):
+        if gap_before >= 0.45 and i + 1 < len(groups) and last_fmt != 'whisper_glitch_box':
             span = groups[i:i + 2]
             end = nxt_start(i + 2, span[-1]['e'] + hold + 0.15)
             fmt = 'whisper_glitch_box'
@@ -254,9 +254,13 @@ def caption_items_60_40(
             last_fmt = fmt; fmt_counts[fmt] += 1; i += 2; chunk_idx += 1
             continue
 
-        # Keyword / strong noun beats rotate among graffiti_underline_strike, tilted_pill_badge, behind_head_giant
+        CONTRAST_CONJ = {'бірақ', 'ал', 'алайда', 'себебі', 'өйткені', 'дегенмен', 'керісінше', 'сондықтан', 'әйтпесе'}
+
+        # Keyword / conjunction / question beats rotate among graffiti_underline_strike, tilted_pill_badge, behind_head_giant
         bare_tokens = bare.split()
-        is_key = any(tok in kw_set for tok in bare_tokens) or (len(bare) >= 7 and chunk_idx % 4 == 2)
+        is_contrast = any(tok in CONTRAST_CONJ for tok in bare_tokens)
+        is_q_exc = ('?' in g['w'] or '!' in g['w'])
+        is_key = any(tok in kw_set for tok in bare_tokens) or is_contrast or is_q_exc or (len(bare) >= 7 and chunk_idx % 4 == 2)
         if is_key:
             key_pool = ['tilted_pill_badge', 'graffiti_underline_strike']
             if fmt_counts['behind_head_giant'] * 3 <= chunk_idx + 1 and len(bare) <= 13:
@@ -356,11 +360,13 @@ def caption_items_60_40(
 
         take = 3 if (i + 2 < len(groups) and len(groups[i]['w']) + len(groups[i + 1]['w']) <= 13) else 2
         chunk = groups[i:min(i + take, len(groups))]
+        # Stop before any number, keyword, contrast turn, pause-terminal beat, or stack window
         for k in range(1, len(chunk)):
             bk = chunk[k]['w'].rstrip('?!')
             gap_k = chunk[k]['s'] - chunk[k - 1]['e']
             in_stack_k = any(a - 0.05 <= chunk[k]['s'] < b - 0.05 for a, b in stacks)
-            is_kw_k = any(tok in kw_set for tok in bk.split())
+            b_toks = bk.split()
+            is_kw_k = any(tok in kw_set or tok in CONTRAST_CONJ for tok in b_toks) or ('?' in chunk[k]['w'] or '!' in chunk[k]['w'])
             if NUM_RE.match(bk) or is_kw_k or gap_k >= 0.45 or in_stack_k:
                 chunk = chunk[:k]
                 break
@@ -370,8 +376,32 @@ def caption_items_60_40(
         split_ws = txt_joined.split()
         wf = _mixed_word_fonts(split_ws, 'clean', 'editorial', kw_set) if len(split_ws) >= 2 else None
 
-        if len(chunk) >= 2 and chunk_idx % 4 == 1 and last_fmt != 'graffiti_underline_strike':
-            fmt = 'graffiti_underline_strike'
+        # Strictly enforce no consecutive caption_format repeat
+        conn_pool = ['word_by_word_pop', 'graffiti_underline_strike', 'tilted_pill_badge']
+        if last_fmt == 'word_by_word_pop' or (len(chunk) >= 2 and chunk_idx % 3 == 1 and last_fmt != 'graffiti_underline_strike'):
+            fmt = _pick_next_format([c for c in conn_pool if c != 'word_by_word_pop'], last_fmt, fmt_counts)
+        else:
+            fmt = 'word_by_word_pop' if last_fmt != 'word_by_word_pop' else _pick_next_format(conn_pool, last_fmt, fmt_counts)
+
+        if fmt == 'tilted_pill_badge':
+            items.append(dict(
+                font='impact',
+                word_fonts=wf,
+                caption_format=fmt,
+                text=txt_joined,
+                t0=round(chunk[0]['s'], 3),
+                t1=round(end, 3),
+                x=x,
+                y=y,
+                size=round(size * 0.94),
+                color='#FFFFFF',
+                pill=pill if (pill and pill.lower() != 'none') else '#2F3E2E',
+                tilt=-3.5 if chunk_idx % 2 == 0 else 3.5,
+                anim='pop',
+                sfx='pop',
+                fadeout=False,
+            ))
+        elif fmt == 'graffiti_underline_strike':
             items.append(dict(
                 font='clean',
                 word_fonts=wf,

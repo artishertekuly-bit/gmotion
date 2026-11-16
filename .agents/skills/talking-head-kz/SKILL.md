@@ -19,6 +19,27 @@ Turn a Kazakh/Russian talking-head clip or full YouTube podcast into a finished 
 
 Talk to the person in Kazakh, in plain words. Project files stay in English; everything on screen is in the spoken language.
 
+## Autonomous Expertise: 5 Unbreakable Directorial Rules (Hard Rules)
+
+Every edit plan (`kz_edl.json`) is enforced by `engine/scripts/validate_edl.py` (Strict Compiler Gate — non-zero exit if any rule breaks):
+
+1. **Layout Quota Rule (No Single-Mode Overlay Reels):**
+   - Never rely solely on `overlay` / `behind_speaker`! Maintain this mandatory time distribution:
+     - **`split` (50/50 or 45/55):** `30%–35%` (Top half `y=0..920` plays clean bespoke story visual/motion; bottom half `y=920..1920` shows presenter reaction). Minimum `2` `split` inserts per reel.
+     - **`full` (100% B-Roll / Story Scene):** `25%–30%` (Speaker exits temporarily; full-screen visual story driven by `7` repo patterns runs over the voice). Minimum `2` `full` scenes per reel.
+     - **`cards` / `cutout` / `flood`:** `20%–25%` (Presenter matted/framed while focus shifts to interactive visual cards).
+     - **`behind_speaker`:** `<= 15%` (`> 20%` fails compiler gate!). **BANNED** inside `behind_speaker`: charts, Bento grids, or small-text widgets (speaker head occludes the middle). ONLY `1–2` oversized headline words (`>= 160px`, above `y=120..320` or oversized behind-head type) are permitted behind speaker.
+2. **Zero-Placeholder & Transcript Metaphor Extraction:**
+   - Strictly banned: dummy metrics/copy (`88%`, `НЕГІЗГІ КӨРСЕТКІШ`, `TODO`, `example`, `ЖАСЫРЫН КЕЙС #01`) or meaningless geometric rings.
+   - Read `analysis/program_words.json` in Context Window and map every concrete noun, currency, comparison, or action verb into a bespoke `window.EDL_PAYLOAD`-driven story scene (`split`/`full` HTML or generated `custom_html_scene` via `storyboard.py`).
+3. **2–4 Compound Animations Rule (`2 <= len(animations) <= 4`):**
+   - Every active beat combines 2–4 concurrent layers: `[1. Camera Move] + [2. Story Motion/B-Roll] + [3. Graffiti/3D/Frazix Accent] + [4. Multi-Font Subtitles + SFX]`.
+4. **Multi-Speaker Auto-Focus & Dynamic Camera (`vision_py.py` + `render_reel.py`):**
+   - Up to `3` speakers tracked via Multi-Face MAR variance (`num_faces=3`, lip `13/14`, corners `78/308`); instant cut on scene cuts or `0.35s easeOutCubic` `speaker_whip_pan` on shared shots.
+   - Mandatory dynamic camera per beat across 5 presets: `punch_in` (`1.00 -> 1.24`), `slow_push_in` (`1.00 -> 1.18` `easeInOutSine`), `dramatic_pull_out` (`1.24 -> 1.00`), `speaker_whip_pan` (`1.08 -> 1.16` + X slide), `handheld_breathing` (`±1.5%` organic drift).
+5. **Multi-Font 60% Captions + Paired Fonts (`caption_words.py` + `textass.py`):**
+   - Rotate all 8 geometric formats with semantic grouping and strict consecutive anti-repeat, pairing `Impact`, `Clean`, `Editorial`, and `Tech` fonts inline via `word_fonts`.
+
 ## Core Architecture: 60 / 40 High-Edit + Context-First
 
 1. **Context-First YouTube Podcast Intake (`scripts/fetch_to_context.py`)**:

@@ -263,14 +263,29 @@ def expand_counters(texts, fps):
     return expanded
 
 
+def _default_word_font_pairs(chars, spans, base):
+    """Module 5 default: automatically pair Impact/Clean/Editorial inside multi-word frames."""
+    if base in ('mono', 'tech') or len(spans) < 2:
+        return None
+    lens = [len(idx) for idx in spans]
+    best = max(range(len(spans)), key=lambda k: lens[k])
+    pairs = []
+    for wi, ln in enumerate(lens):
+        if wi == best:
+            pairs.append('editorial' if base in ('clean', 'sub', 'anton', 'impact') else 'impact')
+        elif ln >= 6 and wi % 2 == 1:
+            pairs.append('impact')
+        else:
+            pairs.append('clean')
+    return pairs
+
+
 def _char_font_roles(T):
     """Return a list of font role keys parallel to characters in T['text'], supporting per-word font mixing."""
     chars = list(T['text'].replace('\r\n', '\n').replace('\r', '\n'))
     wf = T.get('word_fonts')
     base = T['font']
     roles = [base] * len(chars)
-    if not wf:
-        return roles
     # Collect word character spans
     spans, cur = [], []
     for i, ch in enumerate(chars):
@@ -281,6 +296,10 @@ def _char_font_roles(T):
             cur.append(i)
     if cur:
         spans.append(cur)
+    if not wf and not T.get('single_font'):
+        wf = _default_word_font_pairs(chars, spans, base)
+    if not wf:
+        return roles
     for wi, idx in enumerate(spans):
         r = base
         if isinstance(wf, list) and wi < len(wf) and wf[wi]:

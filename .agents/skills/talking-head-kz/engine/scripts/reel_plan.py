@@ -6,6 +6,7 @@ insert timing (adjacency, transition entry, split blocks), subtitle word timing 
 (big words hold to the end of their shot, one line at the bottom; width limits are applied after measuring).
 """
 import json
+import math
 import os
 import sys
 
@@ -55,12 +56,16 @@ def build_plan(edl_path):
         cuts = [dict(src_t0=c['src_f0'] / fps, src_t1=c['src_f1'] / fps, prog_t0=c['prog_f0'] / fps) for c in cuts]
     dur = round(sum(c['src_t1'] - c['src_t0'] for c in cuts), 4)
 
+    pfps = pinfo['fps'] or fps
     fpath = resolve(P, pr['faces'])
+    face_rows = []
     if os.path.exists(fpath):
-        fl = [json.loads(l) for l in open(fpath) if l.strip()]
+        fl = [json.loads(l) for l in open(fpath, encoding='utf-8') if l.strip()]
+        face_rows = fl
         xs = sorted(f['x'] for f in fl if 'x' in f)
         ys = sorted(f['y'] for f in fl if 'y' in f)
-        GX, GY = xs[len(xs) // 2] * sw, ys[len(ys) // 2] * sh
+        GX = xs[len(xs) // 2] * sw if xs else sw / 2
+        GY = ys[len(ys) // 2] * sh if ys else sh * 0.35
     else:
         GX, GY = sw / 2, sh * 0.35
     fill = max(W / sw, H / sh)
@@ -86,10 +91,60 @@ def build_plan(edl_path):
                 return z
         return 'wide'
 
+    def _clamp_focus(fx, fy, w, h, s, y0):
+        ax = min(max(fx, w / 2 / s), sw - w / 2 / s)
+        ay = min(max(fy, y0 / s), sh - (h - y0) / s)
+        return round(ax, 2), round(ay, 2)
+
+    def _build_focus_keys(a, b, off, w, h, s, y0):
+        if not face_rows:
+            ax, ay = _clamp_focus(GX, GY, w, h, s, y0)
+            return [dict(t=round(a, 4), ax=ax, ay=ay, mode='cut', dur=0.0)]
+        f_start = max(0, int(math.floor((a + off) * pfps)))
+        f_end = min(len(face_rows), max(f_start + 1, int(math.ceil((b + off) * pfps))))
+        seg_rows = face_rows[f_start:f_end]
+        valid = [r for r in seg_rows if 'x' in r and 'y' in r]
+        if not valid:
+            ax, ay = _clamp_focus(GX, GY, w, h, s, y0)
+            return [dict(t=round(a, 4), ax=ax, ay=ay, mode='cut', dur=0.0)]
+        # Group consecutive active_speaker_id runs (>= 6 frames to ignore 1-frame jitter)
+        runs = []
+        for r in valid:
+            sid = r.get('active_speaker_id', 0)
+            if not runs or runs[-1]['sid'] != sid:
+                runs.append({'sid': sid, 'rows': [r]})
+            else:
+                runs[-1]['rows'].append(r)
+        min_run = max(4, int(round(pfps * 0.25)))
+        merged = []
+        for rn in runs:
+            if merged and len(rn['rows']) < min_run:
+                merged[-1]['rows'].extend(rn['rows'])
+            else:
+                merged.append(rn)
+        keys = []
+        for idx_r, rn in enumerate(merged):
+            rs = rn['rows']
+            mxs = sorted(r['x'] for r in rs)
+            mys = sorted(r['y'] for r in rs)
+            fx, fy = mxs[len(mxs) // 2] * sw, mys[len(mys) // 2] * sh
+            ax, ay = _clamp_focus(fx, fy, w, h, s, y0)
+            if idx_r == 0:
+                keys.append(dict(t=round(a, 4), ax=ax, ay=ay, mode='cut', dur=0.0))
+                continue
+            f_sw = rs[0].get('f', 0)
+            near_cut = any(face_rows[k].get('scene_cut_detected') for k in range(max(0, f_sw - 2), min(len(face_rows), f_sw + 3)))
+            t_prog = round(max(a, min(b - 0.05, rs[0].get('f', 0) / pfps - off)), 4)
+            # If X shifts significantly (> 8% frame) cleanly pan in 0.35s easeOutCubic (or instant jump on hard cut)
+            if abs(ax - keys[-1]['ax']) > sw * 0.06 or near_cut:
+                keys.append(dict(t=t_prog, ax=ax, ay=ay, mode='cut' if near_cut else 'whip_pan', dur=0.0 if near_cut else 0.35))
+        return keys
+
     def pieces(w, h, fixed=None):
         out = []
         for c in cuts:
             p0, p1 = c['prog_t0'], c['prog_t0'] + c['src_t1'] - c['src_t0']
+            off = c['src_t0'] - c['prog_t0']
             bounds = {round(p0 * fps), round(p1 * fps)}
             if not fixed:
                 bounds |= {round(a * fps) for a, b, z in zoom if p0 + 1e-3 < a < p1 - 1e-3}
@@ -99,9 +154,8 @@ def build_plan(edl_path):
                 f = fixed or fr[zoom_at(a + 0.5 / fps)]
                 s = (fill_half if fixed else fill) * f['scale']
                 y0 = f['face_y'] * h
-                ax = min(max(GX, w / 2 / s), sw - w / 2 / s)
-                ay = min(max(GY, y0 / s), sh - (h - y0) / s)
-                out.append(dict(t0=a, t1=b, off=c['src_t0'] - c['prog_t0'], s0=s, s1=s * 1.015, y0=y0, ax=ax, ay=ay))
+                fkeys = _build_focus_keys(a, b, off, w, h, s, y0)
+                out.append(dict(t0=a, t1=b, off=off, s0=s, s1=s * 1.015, y0=y0, ax=fkeys[0]['ax'], ay=fkeys[0]['ay'], focus_keys=fkeys))
         return out
 
     mattes = {}
@@ -113,11 +167,23 @@ def build_plan(edl_path):
 
     inserts = sorted(edl.get('inserts', []), key=lambda i: i['t0'])
     for I in inserts:
+        if I.get('kind') == 'split':
+            I['kind'] = 'full'
+            I['layout'] = 'split'
         if I.get('preset') and I['preset'] in HOOK_CATALOG:
-            I.setdefault('depth', HOOK_CATALOG[I['preset']]['depth'])
-            I.setdefault('spring', {'stiffness': 220, 'damping': 18})
             I.setdefault('kind', 'overlay')
-            I.setdefault('trans', 'cut')
+            if I['kind'] == 'overlay':
+                I.setdefault('depth', HOOK_CATALOG[I['preset']]['depth'])
+                I.setdefault('trans', 'cut')
+            else:
+                I.setdefault('trans', 'whip')
+            I.setdefault('spring', {'stiffness': 220, 'damping': 18})
+        if (I.get('preset') or I.get('html_hook') or I.get('custom_html_scene')) and I.get('kind') == 'full' and not I.get('clips'):
+            I['clips'] = [{'src': 'hooks_rendered/%s.mov' % I['id'], 'color': True, 'raw_color': True}]
+        for c in (I.get('clips') or []):
+            if c.get('src', '').startswith('hooks_rendered/'):
+                c.setdefault('raw_color', True)
+                c.setdefault('color', True)
         if I['kind'] not in KNOWN_KINDS:
             die('insert %s: unknown kind %s' % (I['id'], I['kind']))
         I.setdefault('layout', 'full')
@@ -244,22 +310,29 @@ def build_plan(edl_path):
         T['glow'] = T.get('glow', T['color'].upper() == accent.upper() and T['font'] in ('anton', 'impact'))
     texts = [T for T in texts if T['t1'] > T['t0'] + 0.01]
 
-    # Compound Keyframe camera tracks (Layer 1: zoom_push, smooth_pan, micro_shake, snap_punch)
+    # Compound Keyframe camera tracks (5 presets: punch_in, slow_push_in, dramatic_pull_out, speaker_whip_pan, handheld_breathing)
     camera_keys = []
     for list_key in ('beats', 'keyframes'):
         for item in (edl.get(list_key) or []):
             bt0, bt1 = item.get('t0'), item.get('t1')
             if bt0 is None or bt1 is None or bt1 <= bt0:
                 continue
+            added = False
             for anim in (item.get('animations') or []):
                 if anim.get('layer') == 'camera':
                     camera_keys.append(dict(
                         t0=float(bt0),
                         t1=float(bt1),
-                        effect=anim.get('effect', 'zoom_push'),
+                        effect=anim.get('effect', item.get('camera_motion', 'slow_push_in')),
                         from_scale=float(anim.get('from', 1.0)),
-                        to_scale=float(anim.get('to', 1.08)),
+                        to_scale=float(anim.get('to', 1.18)),
                     ))
+                    added = True
+            if not added and item.get('camera_motion'):
+                camera_keys.append(dict(
+                    t0=float(bt0), t1=float(bt1),
+                    effect=item['camera_motion'], from_scale=1.0, to_scale=1.18,
+                ))
     camera_keys.sort(key=lambda k: k['t0'])
 
     look = dict(halftone='assets/halftone_1080x1920.png', halftone_opacity=24, vignette=42, grain=4)

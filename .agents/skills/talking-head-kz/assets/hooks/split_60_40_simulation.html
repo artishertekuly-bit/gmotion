@@ -4,78 +4,82 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
 <title>11. split_60_40_simulation</title>
-<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent;}canvas{display:block;}</style>
 <script src="_hook_core.js"></script>
 </head>
 <body>
-<canvas id="stage" width="1080" height="1920"></canvas>
+<canvas id="stage"></canvas>
 <script>
-// Top 40% live exponential curve & 3D orbit simulation; Bottom 60% transparent for speaker framing
+// Live data curve simulation filling split (1080x960) or full (1080x1920) directly from EDL_PAYLOAD series/left/right
 HookCore.initStage((ctx, t, imgs, cfg) => {
-  const { W, clamp, seg, springPhys, envelope, roundRectPath } = HookCore;
+  const { clamp, seg, springPhys, envelope, roundRectPath, drawStageBackdrop, deriveText } = HookCore;
   const { alpha } = envelope(t, cfg.dur);
   if (alpha <= 0.005) return;
 
+  drawStageBackdrop(ctx, cfg.W, cfg.H, cfg, t);
+  const { title, label, subtitle } = deriveText(cfg);
   const sp = springPhys(t, 220, 18);
-  const splitH = 740;
-  const title = (cfg.title || 'ӨСІМ ДИНАМИКАСЫ').toUpperCase();
-  const label = (cfg.label || 'LIVE SIMULATION · 40% TOP').toUpperCase();
+  const panelH = cfg.isSplit ? cfg.H : (cfg.isFull ? cfg.H : 740);
+  const yOff = cfg.isSplit || cfg.isFull ? 0 : -(1 - clamp(sp, 0, 1.04)) * 90;
 
   ctx.save();
   ctx.globalAlpha = alpha;
-
-  // Dark upper 40% panel with slide-down spring
-  const yOff = -(1 - clamp(sp, 0, 1.04)) * 90;
-  ctx.fillStyle = 'rgba(11, 12, 14, 0.94)';
-  ctx.fillRect(0, yOff, W, splitH);
-
-  // Accent divider rail separating top 40% simulation from bottom 60% speaker
+  if (!cfg.isSplit && !cfg.isFull) {
+    ctx.fillStyle = 'rgba(11, 12, 14, 0.94)';
+    ctx.fillRect(0, yOff, cfg.W, panelH);
+  }
   ctx.fillStyle = cfg.accent;
-  ctx.fillRect(0, splitH + yOff - 5, W, 6);
+  ctx.fillRect(0, panelH + yOff - 5, cfg.W, 6);
 
-  // Subtle chart grid
+  const gTop = cfg.isFull ? 440 : 210;
+  const gBot = cfg.isFull ? 1320 : 810;
   ctx.strokeStyle = 'rgba(255,255,255,0.10)';
   ctx.lineWidth = 1;
   for (let gx = 120; gx <= 960; gx += 140) {
-    ctx.beginPath(); ctx.moveTo(gx, 190 + yOff); ctx.lineTo(gx, 660 + yOff); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gx, gTop + yOff); ctx.lineTo(gx, gBot + yOff); ctx.stroke();
   }
-  for (let gy = 220; gy <= 640; gy += 105) {
+  for (let gy = gTop; gy <= gBot; gy += 120) {
     ctx.beginPath(); ctx.moveTo(90, gy + yOff); ctx.lineTo(990, gy + yOff); ctx.stroke();
   }
 
-  // Animated growth curve with glowing fill under curve
-  const drawU = clamp(seg(t, 0.12, Math.min(cfg.dur - 0.5, 1.8)));
-  const pts = 40;
+  const series = Array.isArray(cfg.series) && cfg.series.length >= 2 ? cfg.series.map(s => Number(s.val ?? s.v ?? s)) : null;
+  const drawU = clamp(seg(t, 0.12, Math.min(cfg.dur - 0.45, 1.8)));
+  const pts = series ? series.length - 1 : 40;
+  const maxS = series ? Math.max(...series.map(Math.abs), 1) : 1;
+
   ctx.beginPath();
+  let lx = 110, ly = gBot;
   for (let i = 0; i <= Math.floor(pts * drawU); i++) {
-    const u = i / pts;
+    const u = i / Math.max(pts, 1);
     const x = 110 + u * 860;
-    const y = 630 - Math.pow(u, 1.75) * 365 - Math.sin(u * 12 + t * 2) * 14 + yOff;
+    const normY = series ? (series[i] / maxS) : (Math.pow(u, 1.65) + 0.04 * Math.sin(u * 10 + t * 2));
+    const y = gBot - clamp(normY, 0.02, 1.05) * (gBot - gTop - 60) + yOff;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
+    lx = x; ly = y;
   }
   ctx.strokeStyle = cfg.accent2;
   ctx.lineWidth = 8;
   ctx.lineCap = 'round';
   ctx.stroke();
 
-  // Leading dot + live pill
-  const lu = drawU;
-  const lx = 110 + lu * 860;
-  const ly = 630 - Math.pow(lu, 1.75) * 365 - Math.sin(lu * 12 + t * 2) * 14 + yOff;
   ctx.fillStyle = cfg.accent;
-  ctx.beginPath(); ctx.arc(lx, ly, 12, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(lx, ly, 13, 0, Math.PI * 2); ctx.fill();
 
-  roundRectPath(ctx, 90, 95 + yOff, 390, 44, 22);
-  ctx.fillStyle = 'rgba(0,230,118,0.16)';
-  ctx.fill();
-  ctx.fillStyle = cfg.accent2;
-  ctx.font = '800 20px "JetBrains Mono", monospace';
-  ctx.fillText(label.slice(0, 28), 114, 124 + yOff);
-
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 44px "Unbounded", "Montserrat", sans-serif';
-  ctx.fillText(title.slice(0, 22), 90, 185 + yOff);
+  const tag = String(label || cfg.left_title || cfg.right_title || subtitle || '').toUpperCase();
+  if (tag) {
+    roundRectPath(ctx, 90, (cfg.isFull ? 250 : 75) + yOff, 460, 44, 22);
+    ctx.fillStyle = 'rgba(0,230,118,0.16)';
+    ctx.fill();
+    ctx.fillStyle = cfg.accent2;
+    ctx.font = '800 20px "JetBrains Mono", monospace';
+    ctx.fillText(tag.slice(0, 32), 114, (cfg.isFull ? 279 : 104) + yOff);
+  }
+  if (title) {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '900 46px "Unbounded", "Montserrat", sans-serif';
+    ctx.fillText(title.toUpperCase().slice(0, 24), 90, (cfg.isFull ? 355 : 165) + yOff);
+  }
   ctx.restore();
 }, {});
 </script>

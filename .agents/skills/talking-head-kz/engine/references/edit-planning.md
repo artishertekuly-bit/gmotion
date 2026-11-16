@@ -12,23 +12,39 @@ Mark four parts:
 - **Escalation**: the surprising turns - each turn deserves its own visual idea.
 - **Payoff + call to action** (last 3-6 s): the conclusion and the ask.
 
-## 2. Split into beats
+## 2. Autonomous Expertise: Layout Quotas, Metaphor Extraction & 2–4 Layer Stacks
+
+### A. Layout Quota Rule (Mandatory Balance)
+Single-mode `overlay` / `behind_speaker` edits are **prohibited**. Balance beat screen time across:
+- **`split` (50/50 or 45/55):** `30%–35%` of reel (minimum `2` inserts). Top (`y=0..920`) shows clean bespoke story visual / custom HTML animation; bottom (`y=920..1920`) frames the active speaker.
+- **`full` (100% Full-Screen Visual Scene / B-Roll):** `25%–30%` (minimum `2` inserts). Speaker yields to full-bleed motion graphics or footage over voice.
+- **`cards` / `cutout` / `flood`:** `20%–25%`. Speaker cut out or minimized so focus lands on interactive comparative cards.
+- **`behind_speaker`:** `<= 15%` max (`> 20%` fails compiler validation!). **NEVER** put charts, Bento grids, or small multi-line widgets behind speaker (head occludes the center). Only `1–2` word giant headlines (`>= 160px`, top clear zone `y=120..320` or oversized behind-head typography) are allowed.
+
+### B. Transcript Metaphor Extraction Algorithm (Zero-Placeholder Law)
+Before writing any EDL insert or running `storyboard.py`, read `analysis/program_words.json` word by word and convert speech into concrete visual metaphors — **never** abstract placeholder widgets (`88%`, `НЕГІЗГІ КӨРСЕТКІШ`, `TODO`, `example`):
+1. **Extract Tokens per Beat:** Identify exact spoken nouns (`телефон`, `ақша`, `доллар`, `үй`), numeric facts (`160 млн`, `3x`, `%`), contrasting turns (`бірақ`, `ал`, `қарсы`), and physical verbs (`хабарласу`, `өсу`, `салыстыру`).
+2. **Bind Scene Metaphor (`custom_html_scene` / `EDL_PAYLOAD`):**
+   - *Currency / Numbers / Growth* → animated financial chart / counter bento (`from`, `to`, `suffix`, `kpis`, real labels).
+   - *Phone Call / Message / Social* → bespoke UI call card or decrypted terminal message with exact spoken words.
+   - *Contrast / Choice / Dilemma* → `split` or dual `State A -> State B` comparison stage (`left_label`, `right_label`).
+   - *Process / Rule / Breakdown* → isometric system flow or checklist / graffiti callout with exact spoken steps.
+3. **Verify Compound Density (`2..4` animations):** Every active beat combines: `[1. camera_motion] + [2. story scene/insert] + [3. accent graffiti/3D/frazix] + [4. multi-font caption + SFX]`.
+
+## 2.1. Split into beats
 
 A beat is one thought, usually 1.5-4 s, ending at a natural pause or a full stop. For every beat
 decide one primary visual:
 
 | the words are about... | show |
 |---|---|
-| the speaker's opinion, emotion, a question to the viewer | presenter (wide/tight) + big word in front or a subtitle |
-| a concrete thing, place, event, character | B-roll insert (`full`) |
-| something the viewer should see while the speaker reacts | `split` (footage top, presenter bottom) |
-| a number, a rule, a mechanic, a resource | UI insert: `number`, `bar`, `cards`, `counter` text |
-| brands, products, AI models, companies | `logo_flash`, `cards`, `converge`, or a logo over footage |
-| a list ("first... second... third") | counters side by side (`no. 1  no. 2  no. 3`) |
-| two opposing actions ("punching... robbing") | `vsplit` - first clip full, second slides into the bottom half |
-| a contrast between two words | `band` - one word above the strip, one below |
+| speaker emotion / oversized punch word (`<=15%`) | presenter + `behind_speaker` (`>=160px`, `y=120..320`) |
+| a concrete thing, place, process, big metaphor (`25–30%`) | `full` bespoke HTML story scene or B-roll (`100%`) |
+| comparison, metric reaction, dual focus (`30–35%`) | `split` (bespoke top visual `0..920`, presenter bottom) |
+| numbers, multi-item facts, visual focus shift (`20–25%`) | `cards` / `cutout` / `flood` / `bar` / `number` |
+| list / contrasting words | `vsplit` / `band` / `converge` |
 
-Alternate: never two identical treatments in a row if the third beat can be different.
+Alternate: never two identical visual presets or caption formats back to back (`validate_edl.py` enforces this).
 
 ## 3. Choose the words
 

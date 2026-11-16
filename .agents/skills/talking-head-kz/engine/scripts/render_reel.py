@@ -298,16 +298,41 @@ class Renderer:
         for pcs, h in ((p['pieces'], self.H), (p['pieces_half'], self.H // 2)):
             for pc in pcs:
                 s = pc['s0'] / 1.004
-                xs0.append(pc['ax'] - (self.W / 2) / s)
-                xs1.append(pc['ax'] + (self.W / 2) / s)
-                ys0.append(pc['ay'] - pc['y0'] / s)
-                ys1.append(pc['ay'] + (h - pc['y0']) / s)
+                for fk in (pc.get('focus_keys') or [pc]):
+                    ax, ay = fk.get('ax', pc['ax']), fk.get('ay', pc['ay'])
+                    xs0.append(ax - (self.W / 2) / s - 24)
+                    xs1.append(ax + (self.W / 2) / s + 24)
+                    ys0.append(ay - pc['y0'] / s - 24)
+                    ys1.append(ay + (h - pc['y0']) / s + 24)
         x0 = max(0, int(min(xs0)) - 8)
         x1 = min(pr['w'], int(max(xs1)) + 8)
         y0 = max(0, int(min(ys0)) - 8)
         y1 = min(pr['h'], int(max(ys1)) + 8)
         w, h = (x1 - x0) // 2 * 2, (y1 - y0) // 2 * 2
         return (w, h, x0, y0)
+
+    def focus_at(self, pc, t):
+        """Return active speaker center (ax, ay) and whip_pan zoom boost across shots/pan switches."""
+        keys = pc.get('focus_keys')
+        if not keys:
+            return pc['ax'], pc['ay'], 1.0
+        cur_ax, cur_ay, whip_mul = keys[0]['ax'], keys[0]['ay'], 1.0
+        for i, fk in enumerate(keys[1:], 1):
+            t_sw = fk['t']
+            if t < t_sw - 1e-6:
+                break
+            prev = keys[i - 1]
+            if fk.get('mode') == 'whip_pan' and fk.get('dur', 0.35) > 0:
+                dur = float(fk['dur'])
+                u = min(1.0, max(0.0, (t - t_sw) / dur))
+                e = 1.0 - (1.0 - u) ** 3  # easeOutCubic
+                cur_ax = prev['ax'] + (fk['ax'] - prev['ax']) * e
+                cur_ay = prev['ay'] + (fk['ay'] - prev['ay']) * e
+                if u < 1.0:
+                    whip_mul = 1.08 + 0.08 * math.sin(u * math.pi)
+            else:
+                cur_ax, cur_ay = fk['ax'], fk['ay']
+        return cur_ax, cur_ay, whip_mul
 
     def piece(self, pcs, t):
         for pc in pcs:
@@ -316,50 +341,67 @@ class Renderer:
         return pcs[-1] if t >= pcs[-1]['t1'] else pcs[0]
 
     def camera_motion(self, t):
-        """Compound Layer-1 camera kinematics: zoom_push (1.0 -> 1.10 with smooth boundary taper), smooth_pan, micro_shake, snap_punch."""
-        mul, dx, dy = 1.0, 0.0, 0.0
+        """Autonomous camera engine across 5 presets + subtle continuous +/-1.5% handheld breathing drift."""
+        # Always-on organic breathing (+/-1.5%, >= 1.00 so top/bottom never clip)
+        breath = 1.015 + 0.015 * math.sin(t * 1.45) * math.cos(t * 0.63)
+        mul = breath
+        dx = 3.5 * math.sin(t * 1.15)
+        dy = 2.5 * math.cos(t * 0.92)
+        eye_lock = False
+
         for ck in self.p.get('camera_keys') or ():
             if ck['t0'] - 1e-6 <= t < ck['t1'] - 1e-6:
                 dt = max(0.0, t - ck['t0'])
                 rem = max(0.0, ck['t1'] - t)
                 dur = max(ck['t1'] - ck['t0'], 0.05)
                 u = min(1.0, dt / dur)
-                taper = min(1.0, rem / 0.55)
-                ef = ck.get('effect', 'zoom_push')
-                if ef == 'zoom_push':
-                    rise = bez(min(1.0, dt / max(0.45, dur - 0.55)), 0.55, 0.9)
-                    env = rise * bez(taper, 0.65, 0.85)
-                    cap_to = min(ck.get('to_scale', 1.04), 1.04)
-                    mul *= ck.get('from_scale', 1.0) + (cap_to - ck.get('from_scale', 1.0)) * env
-                elif ef == 'snap_punch':
-                    attack = min(1.0, dt / 0.08)
-                    mul *= 1.0 + 0.04 * attack * math.exp(-dt * 7.5) * math.cos(dt * 10.0) * min(1.0, rem / 0.16)
-                elif ef == 'smooth_pan':
-                    dx += math.sin(u * math.pi) * 24.0
+                ease_sine = 0.5 * (1.0 - math.cos(math.pi * u))
+                taper = bez(min(1.0, rem / 0.45), 0.65, 0.85)
+                ef = ck.get('effect', 'slow_push_in')
+
+                if ef in ('punch_in', 'snap_punch'):
+                    # Crisp 1.00 -> 1.24 jump cut at beat start, holding eye line cleanly
+                    target = min(ck.get('to_scale', 1.24), 1.24)
+                    mul *= 1.0 + (target - 1.0) * taper
+                    eye_lock = True
+                elif ef in ('slow_push_in', 'zoom_push', 'zoom_in'):
+                    target = min(ck.get('to_scale', 1.18), 1.18)
+                    mul *= (ck.get('from_scale', 1.0) + (target - ck.get('from_scale', 1.0)) * ease_sine * taper)
+                elif ef in ('dramatic_pull_out', 'zoom_out'):
+                    start_s = min(ck.get('from_scale', 1.24), 1.24)
+                    end_s = max(ck.get('to_scale', 1.00), 1.00)
+                    mul *= start_s + (end_s - start_s) * ease_sine
+                elif ef in ('speaker_whip_pan', 'whip_pan', 'smooth_pan'):
+                    dx += math.sin(u * math.pi) * 28.0
+                    mul *= 1.08 + 0.08 * math.sin(u * math.pi)
                 elif ef == 'micro_shake' and dt < 0.36:
                     damp = math.exp(-dt * 9.0) * min(1.0, dt / 0.04)
                     dx += 10.0 * damp * math.sin(dt * 42.0)
                     dy += 7.0 * damp * math.cos(dt * 37.0)
-        return mul, dx, dy
+                elif ef == 'handheld_breathing':
+                    mul *= 1.015 + 0.015 * math.sin(t * 2.1)
+        return max(1.00, mul), dx, dy, eye_lock
 
     def presenter(self, t, half=False, base=100.0, matte=None, h=None):
-        """Presenter (or one of its mattes) at program time t on a canvas W x h. base = punch-in scale %."""
+        """Presenter (or one of its mattes) at program time t on canvas W x h with active-speaker auto-focus."""
         pcs = self.p['pieces_half'] if half else self.p['pieces']
         h = h or (self.H // 2 if half else self.H)
         pc = self.piece(pcs, t)
         u = (t - pc['t0']) / max(pc['t1'] - pc['t0'] - 1.0 / self.fps, 1e-3)
         s = pc['s0'] + (pc['s1'] - pc['s0']) * min(1.0, max(0.0, u))
-        cam_mul, cam_dx, cam_dy = (1.0, 0.0, 0.0) if half else self.camera_motion(t)
-        k = (base / 100.0) * cam_mul
+        foc_ax, foc_ay, whip_mul = self.focus_at(pc, t)
+        cam_mul, cam_dx, cam_dy, eye_lock = (1.0, 0.0, 0.0, False) if half else self.camera_motion(t)
+        k = (base / 100.0) * cam_mul * whip_mul
         cw, ch, cx, cy = self.crop
         if matte:
             rd, d, mc = self.mattes[matte]
             img = rd.frame(t + pc['off'])
-            ax, ay, S = (pc['ax'] - cx) / d, (pc['ay'] - cy) / d, s * d * k
+            ax, ay, S = (foc_ax - cx) / d, (foc_ay - cy) / d, s * d * k
         else:
             img = self.pres.frame(t + pc['off'])
-            ax, ay, S = pc['ax'] - cx, pc['ay'] - cy, s * k
-        py = h / 2 + k * (pc['y0'] - h / 2) + cam_dy
+            ax, ay, S = foc_ax - cx, foc_ay - cy, s * k
+        target_y0 = h * 0.35 if eye_lock else pc['y0']
+        py = h / 2 + k * (target_y0 - h / 2) + cam_dy
         canvas = np.zeros((h, self.W) if matte else (h, self.W, 3), np.float32)
         r = sample(img, self.W, h, ax, ay, S, S, self.W / 2 + cam_dx, py)
         if r:
@@ -419,7 +461,9 @@ class Renderer:
             return out
         src = frame_of(spec['abs'], spec['w'], spec['h'], spec['fps'])
         img = place(src, spec['w'], spec['h'])
-        if spec.get('color'):
+        if spec.get('raw_color'):
+            out = np.clip(img, 0, 1)
+        elif spec.get('color'):
             out = treat_color(img)
         else:
             out = treat_bw(img, self.black, self.white)

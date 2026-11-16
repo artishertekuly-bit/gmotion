@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+<title>Bespoke Scene: call_ui</title>
+<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<script>
+HookCore.initStage((ctx, t, imgs, cfg) => {
+  const { clamp, seg, springPhys, envelope, roundRectPath, drawStageBackdrop, deriveText } = HookCore;
+  const { alpha } = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+  drawStageBackdrop(ctx, cfg.W, cfg.H, cfg, t);
+  const { title, subtitle, label, tokens } = deriveText(cfg);
+
+  // Bespoke Phone Call / Communication Metaphor Scene
+  const cardW = 620, cardH = cfg.isFull ? 760 : 540;
+  const cx = cfg.W / 2, cy = cfg.cy;
+  const sp = springPhys(t, 220, 18);
+  const ringP = (t * 1.8) % 1;
+
+  // Expanding sonar call rings behind phone frame
+  for (let i = 0; i < 3; i++) {
+    const ru = (t * 0.9 + i * 0.33) % 1;
+    ctx.strokeStyle = cfg.accent2;
+    ctx.globalAlpha = (1 - ru) * 0.38 * alpha;
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(cx, cy, 180 + ru * 280, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cx, cy);
+  ctx.scale(0.92 + 0.08 * sp, 0.92 + 0.08 * sp);
+  roundRectPath(ctx, -cardW / 2, -cardH / 2, cardW, cardH, 42);
+  ctx.fillStyle = 'rgba(18, 20, 26, 0.96)';
+  ctx.fill();
+  ctx.strokeStyle = cfg.accent2;
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Pulsing call avatar + live audio waveform
+  const pulse = 1 + 0.08 * Math.sin(t * 9.0);
+  ctx.fillStyle = cfg.accent;
+  ctx.beginPath(); ctx.arc(0, -cardH * 0.20, 62 * pulse, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#0B0B0E';
+  ctx.font = '900 48px "Unbounded", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('☎', 0, -cardH * 0.20 + 16);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 44px "Unbounded", "Montserrat", sans-serif';
+  ctx.fillText(title.toUpperCase().slice(0, 18), 0, -10);
+  if (subtitle) {
+    ctx.fillStyle = 'rgba(237,230,222,0.82)';
+    ctx.font = 'italic 700 30px "Playfair Display", serif';
+    ctx.fillText(subtitle.slice(0, 26), 0, 46);
+  }
+
+  // Animated EQ bars representing incoming speech
+  for (let b = -7; b <= 7; b++) {
+    const bh = 18 + Math.abs(Math.sin(t * 7.5 + b * 0.7)) * 74 * sp;
+    ctx.fillStyle = Math.abs(b) <= 2 ? cfg.accent : cfg.accent2;
+    roundRectPath(ctx, b * 24 - 7, cardH * 0.24 - bh / 2, 14, bh, 7);
+    ctx.fill();
+  }
+  ctx.restore();
+}, {});
+</script>
+</body>
+</html>

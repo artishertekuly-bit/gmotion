@@ -4,52 +4,51 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
 <title>2. graffiti_fact_explosion</title>
-<style>html,body{margin:0;padding:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent;}canvas{display:block;}</style>
 <script src="_hook_core.js"></script>
 </head>
 <body>
-<canvas id="stage" width="1080" height="1920"></canvas>
+<canvas id="stage"></canvas>
 <script>
-// Torn paper + graffiti badges (FAKT / EREZHE) + red arrow loop with volume-preserving squash & stretch
+// Parametrized torn paper + graffiti badges + red loop arrow driven strictly by EDL_PAYLOAD
 HookCore.initStage((ctx, t, imgs, cfg) => {
-  const { W, clamp, seg, springPhys, envelope, drawAsset } = HookCore;
+  const { clamp, springPhys, envelope, drawAsset, drawStageBackdrop, deriveText } = HookCore;
   const { alpha } = envelope(t, cfg.dur);
   if (alpha <= 0.005) return;
 
+  drawStageBackdrop(ctx, cfg.W, cfg.H, cfg, t);
+  const { title, subtitle, label } = deriveText(cfg);
   const stripSp = springPhys(t, 220, 18);
   const badgeSp = springPhys(Math.max(0, t - 0.16), 240, 16);
   const arrowSp = springPhys(Math.max(0, t - 0.34), 210, 17);
-  const headline = (cfg.title || 'НАҚТЫ ФАКТ').toUpperCase();
-  const sub = (cfg.label || 'БІРІНШІ РЕТ').toUpperCase();
 
   ctx.save();
   ctx.globalAlpha = alpha;
-
-  // Torn paper strip wipe in from left with squash & stretch preservation
   const sy = 0.88 + 0.12 * stripSp;
   const sx = 1 / Math.pow(Math.max(sy, 0.5), 0.6);
-  const stripX = W / 2 - (1 - stripSp) * 260;
-  drawAsset(ctx, imgs.torn, stripX, 395, 920, 0, 0.96, -0.025, sx, sy);
+  const stripX = cfg.W / 2 - (1 - stripSp) * 260;
+  drawAsset(ctx, imgs.torn, stripX, cfg.cy, 940, 0, 0.96, -0.025, sx, sy);
 
-  // Dark ink headline over torn paper
   if (stripSp > 0.25) {
     ctx.save();
-    ctx.translate(stripX, 398);
+    ctx.translate(stripX, cfg.cy + 4);
     ctx.rotate(-0.025);
     ctx.textAlign = 'center';
     ctx.fillStyle = '#0B0B0B';
-    ctx.font = '900 58px "Unbounded", "Montserrat", sans-serif';
-    ctx.fillText(headline.slice(0, 20), 0, 14);
-    ctx.fillStyle = '#ED3B22';
-    ctx.font = '800 24px "Montserrat", sans-serif';
-    ctx.fillText(sub.slice(0, 28), 0, -44);
+    ctx.font = '900 56px "Unbounded", "Montserrat", sans-serif';
+    ctx.fillText(title.toUpperCase().slice(0, 20), 0, 14);
+    const subText = (label || subtitle).toUpperCase();
+    if (subText) {
+      ctx.fillStyle = '#ED3B22';
+      ctx.font = '800 24px "Montserrat", sans-serif';
+      ctx.fillText(subText.slice(0, 28), 0, -44);
+    }
     ctx.restore();
   }
 
-  // Graffiti badges popping on flanks above shoulders
-  const useRule = /ереже|заң|қағида|rule/i.test(headline + ' ' + sub);
-  drawAsset(ctx, useRule ? imgs.erezhe : imgs.fakt, 250, 245, 290 * (0.9 + 0.1 * badgeSp), 0, badgeSp, -0.09);
-  drawAsset(ctx, imgs.arrow, 795, 535, 195 * clamp(arrowSp), 0, clamp(arrowSp), 0.15 + Math.sin(t * 3.0) * 0.05);
+  const useRule = /ереже|заң|қағида|rule/i.test(title + ' ' + label + ' ' + subtitle);
+  drawAsset(ctx, useRule ? imgs.erezhe : imgs.fakt, 240, cfg.cy - 160, 290 * (0.9 + 0.1 * badgeSp), 0, badgeSp, -0.09);
+  drawAsset(ctx, imgs.arrow, 800, cfg.cy + 145, 195 * clamp(arrowSp), 0, clamp(arrowSp), 0.15 + Math.sin(t * 3.0) * 0.05);
   ctx.restore();
 }, {
   fakt: '../graffiti/badge_fakt.png',

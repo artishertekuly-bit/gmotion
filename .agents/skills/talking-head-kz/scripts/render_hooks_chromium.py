@@ -98,7 +98,10 @@ def render_html_to_video(html_path, out_path, dur, fps=60, width=1080, height=19
     os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
     hook_params = dict(params or {})
     hook_params.setdefault('dur', float(dur))
+    hook_params.setdefault('W', int(width))
+    hook_params.setdefault('H', int(height))
     hook_params['assets'] = dict(_skill_assets_url_map(), **(hook_params.get('assets') or {}))
+    core_js = os.path.join(SKILL, 'assets', 'hooks', '_hook_core.js')
 
     with tempfile.TemporaryDirectory(prefix='hk_') as tmp:
         with sync_playwright() as pw:
@@ -113,7 +116,10 @@ def render_html_to_video(html_path, out_path, dur, fps=60, width=1080, height=19
                 ],
             )
             page = browser.new_page(viewport={'width': width, 'height': height}, device_scale_factor=1)
-            page.add_init_script(f'window.__HOOK_PARAMS__ = {json.dumps(hook_params, ensure_ascii=False)};')
+            payload_json = json.dumps(hook_params, ensure_ascii=False)
+            page.add_init_script(f'window.EDL_PAYLOAD = {payload_json}; window.__HOOK_PARAMS__ = window.EDL_PAYLOAD;')
+            if os.path.exists(core_js):
+                page.add_init_script(path=core_js)
             page.goto(url, wait_until='networkidle')
             page.evaluate('() => Promise.all([document.fonts.ready, window.__HOOK_ASSETS_READY__ || Promise.resolve()])')
 
@@ -182,10 +188,13 @@ def main():
     W = int(edl.get('W', a.width))
     H = int(edl.get('H', a.height))
     accent_default = edl.get('accent', '#FFD600')
+    pw_path = os.path.join(P, 'analysis', 'program_words.json')
+    pwords = load_json(pw_path) if os.path.exists(pw_path) else []
+
     rendered = 0
     for ins in edl.get('inserts', []):
         preset = ins.get('preset')
-        hk = ins.get('html_hook') or (HOOK_CATALOG[preset]['html'] if preset in HOOK_CATALOG else None)
+        hk = ins.get('html_hook') or ins.get('custom_html_scene') or (HOOK_CATALOG[preset]['html'] if preset in HOOK_CATALOG else None)
         if not hk:
             continue
         html_abs = hk if os.path.isabs(hk) else os.path.join(P, hk)
@@ -196,25 +205,47 @@ def main():
         if not os.path.exists(html_abs):
             sys.exit(f"ERROR: insert {ins.get('id')} missing html_hook: {hk}")
         dur = float(ins['t1'] - ins['t0'])
-        target_rel = (ins.get('overlay') or {}).get('src') or (ins.get('clips') or [{}])[0].get('src')
-        if not target_rel:
-            target_rel = os.path.join('hooks_rendered', f"{ins.get('id', 'hook')}.mov")
+        layout = ins.get('layout', 'full')
+        kind = ins.get('kind', 'overlay')
+        render_h = (H // 2) if layout == 'split' else H
+        alpha = bool(ins.get('alpha', kind == 'overlay' and layout != 'split'))
+        target_rel = os.path.join('hooks_rendered', f"{ins.get('id', 'hook')}.mov")
+        if kind == 'overlay' and not alpha:
+            kind = 'full'
+            ins['kind'] = 'full'
+        if kind == 'overlay':
+            target_rel = (ins.get('overlay') or {}).get('src') or target_rel
             ins['overlay'] = {'src': target_rel}
+        else:
+            target_rel = (ins.get('clips') or [{}])[0].get('src') or target_rel
+            ins['clips'] = [{'src': target_rel, 'color': True, 'raw_color': True}]
         target_abs = target_rel if os.path.isabs(target_rel) else os.path.join(P, target_rel)
-        alpha = bool(ins.get('alpha', ins.get('kind') == 'overlay'))
+
+        spoken = ' '.join(w['w'].strip() for w in pwords if ins['t0'] - 0.15 <= w['s'] < ins['t1'] - 0.02)
         params = dict(ins.get('params') or {})
-        for k in ('title', 'subtitle', 'label', 'from', 'to', 'suffix', 'accent'):
+        forward_keys = (
+            'title', 'subtitle', 'label', 'from', 'to', 'suffix', 'accent', 'accent2',
+            'kpis', 'items', 'series', 'left_label', 'right_label', 'left_title', 'right_title',
+            'code_lines', 'metaphor', 'bullets',
+        )
+        for k in forward_keys:
             if k in ins and k not in params:
                 params[k] = ins[k]
+        params['layout'] = layout
+        params['kind'] = kind
+        params['W'] = W
+        params['H'] = render_h
+        params.setdefault('spoken_words', spoken)
         params.setdefault('accent', accent_default)
         params.setdefault('dur', dur)
-        render_html_to_video(html_abs, target_abs, dur, fps=a.fps, width=W, height=H, alpha=alpha, params=params)
+        render_html_to_video(html_abs, target_abs, dur, fps=a.fps, width=W, height=render_h, alpha=alpha, params=params)
         rendered += 1
 
     if rendered:
         with open(a.edl, 'w', encoding='utf-8') as fh:
-            json.dump(edl, fh, indent=1, ensure_ascii=False)
-    print(f'chromium hooks complete: {rendered} overlay(s) rendered.')
+            json.dump(edl, fh, indent=2, ensure_ascii=False)
+            fh.write('\n')
+    print(f'chromium hooks complete: {rendered} scene(s) rendered.')
 
 
 if __name__ == '__main__':

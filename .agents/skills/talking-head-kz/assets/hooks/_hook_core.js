@@ -87,20 +87,80 @@
   }
 
   function getConfig(defaults) {
-    const p = global.__HOOK_PARAMS__ || {};
+    const p = Object.assign({}, global.EDL_PAYLOAD || {}, global.__HOOK_PARAMS__ || {});
+    const layout = p.layout || 'overlay';
+    const kind = p.kind || (layout === 'split' ? 'full' : 'overlay');
+    const cW = Number(p.W) || W;
+    const cH = Number(p.H) || (layout === 'split' ? 960 : H);
+    const isSplit = layout === 'split';
+    const isFull = kind === 'full' && !isSplit;
+    const cy = isSplit ? cH * 0.52 : (isFull ? cH * 0.47 : 265);
     return Object.assign({
       dur: 3.5,
       accent: '#FFD600',
       accent2: '#00E676',
       danger: '#ED3B22',
+      layout,
+      kind,
+      isSplit,
+      isFull,
+      W: cW,
+      H: cH,
+      cy,
       title: '',
       subtitle: '',
       label: '',
+      spoken_words: '',
       from: 0,
-      to: 100,
-      suffix: '%',
+      to: 0,
+      suffix: '',
+      kpis: [],
+      items: [],
+      series: [],
+      left_label: '',
+      right_label: '',
       words: [],
     }, defaults || {}, p);
+  }
+
+  function deriveText(cfg) {
+    const sw = String(cfg.spoken_words || '').trim();
+    const tokens = sw ? sw.split(/\s+/).filter(Boolean) : [];
+    const title = String(cfg.title || tokens.slice(0, 3).join(' ')).trim();
+    const subtitle = String(cfg.subtitle || tokens.slice(3, 7).join(' ')).trim();
+    const label = String(cfg.label || '').trim();
+    return { title, subtitle, label, tokens };
+  }
+
+  function drawStageBackdrop(ctx, w, h, cfg, t) {
+    if (!cfg.isFull && !cfg.isSplit) return;
+    ctx.save();
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, '#0B0B0E');
+    g.addColorStop(0.55, '#131118');
+    g.addColorStop(1, '#09090C');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    // Subtle moving editorial grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    const shift = (t * 26) % 90;
+    for (let x = -shift; x < w; x += 90) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+    for (let y = 0; y < h; y += 90) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+
+    // Ambient radial color accent glow
+    const rg = ctx.createRadialGradient(w * 0.5, h * 0.45, 30, w * 0.5, h * 0.45, w * 0.68);
+    rg.addColorStop(0, 'rgba(255, 214, 0, 0.10)');
+    rg.addColorStop(0.6, 'rgba(0, 230, 118, 0.05)');
+    rg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = rg;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
   }
 
   function loadImages(relMap) {
@@ -139,17 +199,25 @@
   }
 
   function initStage(renderFn, relImages) {
+    const cfg0 = getConfig();
+    const cW = cfg0.W || W;
+    const cH = cfg0.H || H;
     const canvas = document.getElementById('stage') || (() => {
       const c = document.createElement('canvas');
-      c.id = 'stage'; c.width = W; c.height = H;
+      c.id = 'stage';
       document.body.appendChild(c);
       return c;
     })();
+    canvas.width = cW;
+    canvas.height = cH;
+    canvas.style.width = cW + 'px';
+    canvas.style.height = cH + 'px';
     const ctx = canvas.getContext('2d');
     const imgs = loadImages(relImages);
     global.seek = function (t) {
-      ctx.clearRect(0, 0, W, H);
-      renderFn(ctx, t, imgs, getConfig());
+      const cfg = getConfig();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      renderFn(ctx, t, imgs, cfg);
     };
     global.seek(0);
     return imgs;
@@ -157,6 +225,7 @@
 
   global.HookCore = {
     W, H, clamp, lerp, seg, smoothstep, easeOutCubic, springPhys, mixColor,
-    mulberry32, vnoise2d, envelope, roundRectPath, getConfig, loadImages, drawAsset, initStage,
+    mulberry32, vnoise2d, envelope, roundRectPath, getConfig, deriveText,
+    drawStageBackdrop, loadImages, drawAsset, initStage,
   };
 })(window);

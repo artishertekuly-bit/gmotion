@@ -95,6 +95,26 @@ def main():
             plan(c['prog_t0'], 'jump cut (pause removed)')
     for z in (edl.get('zoom') or []):
         plan(z[0], 'framing change')
+    for bt in (edl.get('beats') or []):
+        cm = bt.get('camera_motion', '')
+        if not cm:
+            for a_ in (bt.get('animations') or []):
+                if a_.get('layer') == 'camera':
+                    cm = a_.get('effect', '')
+                    break
+        if cm in ('punch_in', 'dramatic_pull_out', 'speaker_whip_pan', 'whip_pan', 'snap_punch'):
+            plan(bt['t0'], 'beat camera (%s)' % cm, before=1, after=6)
+    faces_p = os.path.join(P, 'analysis', 'faces.jsonl')
+    if os.path.exists(faces_p):
+        prev_sid = None
+        for ln in open(faces_p, encoding='utf-8'):
+            if not ln.strip():
+                continue
+            r = json.loads(ln)
+            sid = r.get('active_speaker_id')
+            if r.get('scene_cut_detected') or (prev_sid is not None and sid is not None and sid != prev_sid):
+                plan(r.get('f', 0) / fps, 'active speaker / cut', before=1, after=12)
+            prev_sid = sid
     for I in ins:                                                          # the punch-in before an insert and the release after it
         plan(I['t0'] - 0.18, 'punch-in before %s' % I['id'], after=6)
     unplanned = [k for k in spikes if k not in planned]

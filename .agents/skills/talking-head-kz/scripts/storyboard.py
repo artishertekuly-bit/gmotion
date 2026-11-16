@@ -25,25 +25,206 @@ sys.path.insert(0, ENGINE)
 sys.path.insert(0, HERE)
 from common import load_json  # noqa: E402
 from hook_registry import (  # noqa: E402
+    CAMERA_PRESETS,
     CAPTION_FORMATS,
     HOOK_CATALOG,
     balance_keyframe_stack,
     build_compound_keyframes,
+    extract_transcript_metaphor,
     pick_hook_preset,
 )
 from sfx_from_edl import events_from_edl  # noqa: E402
 
 
-def route_mastery_v2(edl, words):
-    """Apply Mastery V2 12-hook Anti-Repeat Routing + 2..4 Compound Keyframe Stacks across beats."""
+def generate_custom_html_scene(project_dir, beat_idx, metaphor_info):
+    """Module 4: Generate bespoke Canvas/WebGL HTML story scene matched to transcript metaphor."""
+    metaphor = metaphor_info.get('metaphor', 'process_steps')
+    rel_dir = os.path.join('motion_hooks')
+    os.makedirs(os.path.join(project_dir, rel_dir), exist_ok=True)
+    fname = f'scene_b{beat_idx + 1}_{metaphor}.html'
+    rel_path = os.path.join(rel_dir, fname).replace('\\', '/')
+    abs_path = os.path.join(project_dir, rel_dir, fname)
+
+    # Interactive story-metaphor draw code tailored to exact metaphor class using window.EDL_PAYLOAD
+    if metaphor == 'call_ui':
+        body_js = """
+  // Bespoke Phone Call / Communication Metaphor Scene
+  const cardW = 620, cardH = cfg.isFull ? 760 : 540;
+  const cx = cfg.W / 2, cy = cfg.cy;
+  const sp = springPhys(t, 220, 18);
+  const ringP = (t * 1.8) % 1;
+
+  // Expanding sonar call rings behind phone frame
+  for (let i = 0; i < 3; i++) {
+    const ru = (t * 0.9 + i * 0.33) % 1;
+    ctx.strokeStyle = cfg.accent2;
+    ctx.globalAlpha = (1 - ru) * 0.38 * alpha;
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(cx, cy, 180 + ru * 280, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cx, cy);
+  ctx.scale(0.92 + 0.08 * sp, 0.92 + 0.08 * sp);
+  roundRectPath(ctx, -cardW / 2, -cardH / 2, cardW, cardH, 42);
+  ctx.fillStyle = 'rgba(18, 20, 26, 0.96)';
+  ctx.fill();
+  ctx.strokeStyle = cfg.accent2;
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Pulsing call avatar + live audio waveform
+  const pulse = 1 + 0.08 * Math.sin(t * 9.0);
+  ctx.fillStyle = cfg.accent;
+  ctx.beginPath(); ctx.arc(0, -cardH * 0.20, 62 * pulse, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#0B0B0E';
+  ctx.font = '900 48px "Unbounded", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('☎', 0, -cardH * 0.20 + 16);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 44px "Unbounded", "Montserrat", sans-serif';
+  ctx.fillText(title.toUpperCase().slice(0, 18), 0, -10);
+  if (subtitle) {
+    ctx.fillStyle = 'rgba(237,230,222,0.82)';
+    ctx.font = 'italic 700 30px "Playfair Display", serif';
+    ctx.fillText(subtitle.slice(0, 26), 0, 46);
+  }
+
+  // Animated EQ bars representing incoming speech
+  for (let b = -7; b <= 7; b++) {
+    const bh = 18 + Math.abs(Math.sin(t * 7.5 + b * 0.7)) * 74 * sp;
+    ctx.fillStyle = Math.abs(b) <= 2 ? cfg.accent : cfg.accent2;
+    roundRectPath(ctx, b * 24 - 7, cardH * 0.24 - bh / 2, 14, bh, 7);
+    ctx.fill();
+  }
+  ctx.restore();"""
+    elif metaphor == 'currency_compare':
+        body_js = """
+  // Bespoke Currency / Value Comparison Bar Scene
+  const cx = cfg.W / 2, cy = cfg.cy;
+  const sp = springPhys(t, 220, 18);
+  const grow = clamp(seg(t, 0.14, Math.min(cfg.dur - 0.4, 1.5)));
+  const e = 1 - Math.pow(1 - grow, 3);
+  const items = Array.isArray(cfg.items) && cfg.items.length >= 2 ? cfg.items : [cfg.left_label, cfg.right_label];
+  const barW = 240, maxH = cfg.isFull ? 580 : 380;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if (title) {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '900 46px "Unbounded", "Montserrat", sans-serif';
+    ctx.fillText(title.toUpperCase().slice(0, 24), cx, cy - maxH * 0.56);
+  }
+
+  const cols = [cfg.danger, cfg.accent2];
+  const ratios = [0.58, 0.96];
+  const xs = [cx - 210, cx + 210];
+  ratios.forEach((r, idx) => {
+    const bh = maxH * r * e;
+    const x = xs[idx], yBot = cy + maxH * 0.42;
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    roundRectPath(ctx, x - barW / 2, yBot - maxH, barW, maxH, 20);
+    ctx.fill();
+    ctx.fillStyle = cols[idx];
+    roundRectPath(ctx, x - barW / 2, yBot - Math.max(16, bh), barW, Math.max(16, bh), 20);
+    ctx.fill();
+    const lbl = String(items[idx] || '').toUpperCase().slice(0, 12);
+    if (lbl) {
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '900 32px "JetBrains Mono", monospace';
+      ctx.fillText(lbl, x, yBot + 54);
+    }
+  });
+  ctx.restore();"""
+    else:
+        body_js = """
+  // Bespoke Step / Story Cards Reveal driven purely by EDL_PAYLOAD tokens
+  const cx = cfg.W / 2, cy = cfg.cy;
+  const rawSteps = (Array.isArray(cfg.items) && cfg.items.length) ? cfg.items : tokens.slice(0, 3);
+  const n = Math.max(1, Math.min(3, rawSteps.length));
+  const gap = cfg.isFull ? 165 : 132;
+  const startY = cy - ((n - 1) * gap) * 0.5 + 30;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if (title) {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = cfg.accent;
+    ctx.font = '900 46px "Unbounded", "Montserrat", sans-serif';
+    ctx.fillText(title.toUpperCase().slice(0, 24), cx, startY - 120);
+  }
+  for (let i = 0; i < n; i++) {
+    const sp = springPhys(Math.max(0, t - i * 0.16), 220, 18);
+    const y = startY + i * gap;
+    ctx.save();
+    ctx.translate(cx - (1 - clamp(sp, 0, 1.05)) * 120, y);
+    roundRectPath(ctx, -400, -52, 800, 104, 22);
+    ctx.fillStyle = i === n - 1 ? 'rgba(255,214,0,0.16)' : 'rgba(22,19,26,0.92)';
+    ctx.fill();
+    ctx.strokeStyle = i === n - 1 ? cfg.accent : 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = cfg.accent2;
+    ctx.font = '900 34px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`0${i + 1}`, -365, 12);
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 34px "Montserrat", sans-serif';
+    ctx.fillText(String(rawSteps[i] || '').toUpperCase().slice(0, 20), -285, 12);
+    ctx.restore();
+  }
+  ctx.restore();"""
+
+    html = f"""<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080, height=1920, initial-scale=1.0" />
+<title>Bespoke Scene: {metaphor}</title>
+<style>html,body{{margin:0;padding:0;overflow:hidden;background:transparent;}}canvas{{display:block;}}</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<script>
+HookCore.initStage((ctx, t, imgs, cfg) => {{
+  const {{ clamp, seg, springPhys, envelope, roundRectPath, drawStageBackdrop, deriveText }} = HookCore;
+  const {{ alpha }} = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+  drawStageBackdrop(ctx, cfg.W, cfg.H, cfg, t);
+  const {{ title, subtitle, label, tokens }} = deriveText(cfg);
+{body_js}
+}}, {{}});
+</script>
+</body>
+</html>
+"""
+    with open(abs_path, 'w', encoding='utf-8') as fh:
+        fh.write(html)
+    return rel_path
+
+
+def route_mastery_v2(edl, words, project_dir=None, write_custom_scenes=False):
+    """Apply Autonomous Expertise: Layout Quota, Metaphor Extraction, Anti-Repeat & 2..4 Layers."""
     beats = edl.get('beats') or []
     last_used = []
     kf_out = []
     ins_by_time = sorted(edl.get('inserts', []), key=lambda i: i['t0'])
+    n_beats = max(len(beats), 1)
+    # Deterministic quota sequence: ensure >=2 split and >=2 full while capping behind_speaker <= 1 beat (<=15%)
+    quota_ring = ['full', 'split', 'full', 'split', 'cards', 'split', 'behind_speaker']
+
     for idx, bt in enumerate(beats):
         t0, t1 = float(bt['t0']), float(bt['t1'])
         said = ' '.join(w['w'].strip() for w in words if t0 - 0.02 <= w['s'] < t1 - 0.02)
+        meta = extract_transcript_metaphor(said, bt.get('name', ''))
         active_ins = [i for i in ins_by_time if i['t0'] < t1 - 0.05 and i['t1'] > t0 + 0.05]
+
         preset = None
         for i in active_ins:
             p = i.get('preset')
@@ -52,24 +233,45 @@ def route_mastery_v2(edl, words):
                 break
         if not preset:
             preset = pick_hook_preset(said, bt.get('name', ''), last_used_styles=last_used, fallback_idx=idx)
-            # Attach preset to matching overlay insert if missing or violating anti-repeat
-            for i in active_ins:
-                if i.get('kind') == 'overlay' and not i.get('html_hook'):
-                    i['preset'] = preset
-                    i.setdefault('alpha', True)
-                    i.setdefault('depth', HOOK_CATALOG[preset]['depth'])
-                    break
         else:
             last_used.append(preset)
 
+        target_mode = quota_ring[idx % len(quota_ring)]
+        for i in active_ins:
+            if not i.get('preset') and not i.get('html_hook') and not i.get('custom_html_scene'):
+                if target_mode == 'behind_speaker' and idx / n_beats <= 0.15:
+                    i['kind'] = 'overlay'
+                    i['depth'] = 'behind_speaker'
+                    i['preset'] = 'halftone_cutout_backsplash'
+                else:
+                    i['preset'] = preset
+                    if target_mode == 'split':
+                        i['kind'] = 'full'
+                        i['layout'] = 'split'
+                    elif target_mode == 'full':
+                        i['kind'] = 'full'
+                        i['layout'] = 'full'
+            # Inject spoken semantic payload fields if missing (Zero-Placeholder Law)
+            for k in ('title', 'subtitle', 'label', 'from', 'to', 'suffix', 'kpis', 'items', 'left_label', 'right_label'):
+                if k not in i and meta.get(k) not in (None, '', []):
+                    i[k] = meta[k]
+            if write_custom_scenes and project_dir and i.get('kind') in ('full',) and not i.get('html_hook') and not i.get('custom_html_scene'):
+                if meta['metaphor'] in ('call_ui', 'currency_compare', 'process_steps'):
+                    i['custom_html_scene'] = generate_custom_html_scene(project_dir, idx, meta)
+
         cap_fmt = CAPTION_FORMATS[idx % len(CAPTION_FORMATS)]
+        cam_preset = bt.get('camera_motion') or CAMERA_PRESETS[idx % len(CAMERA_PRESETS)]
         anims = bt.get('animations')
         if not anims:
             anims = build_compound_keyframes(t0, t1, preset=preset, caption_format=cap_fmt, role_index=idx)
+            for a_ in anims:
+                if a_.get('layer') == 'camera':
+                    a_['effect'] = cam_preset
         anims, _ = balance_keyframe_stack(anims, t0=t0, t1=t1, role_index=idx)
         bt['preset'] = preset
+        bt['camera_motion'] = cam_preset
         bt['animations'] = anims
-        kf_out.append({'beat': bt.get('n', idx + 1), 't0': t0, 't1': t1, 'preset': preset, 'animations': anims})
+        kf_out.append({'beat': bt.get('n', idx + 1), 't0': t0, 't1': t1, 'preset': preset, 'camera_motion': cam_preset, 'animations': anims})
     if kf_out:
         edl['keyframes'] = kf_out
     return edl
@@ -135,10 +337,11 @@ def main():
     words = load_json(pw_path) if os.path.exists(pw_path) else []
     if not edl.get('beats'):
         edl['beats'] = auto_beats(edl, dur)
-    route_mastery_v2(edl, words)
+    route_mastery_v2(edl, words, project_dir=P, write_custom_scenes=bool(a.enrich_edl))
     if a.enrich_edl:
         with open(a.edl, 'w', encoding='utf-8') as fh:
-            json.dump(edl, fh, indent=1, ensure_ascii=False)
+            json.dump(edl, fh, indent=2, ensure_ascii=False)
+            fh.write('\n')
     beats = edl['beats']
     out_dir = os.path.abspath(a.out_dir or os.path.join(P, 'qa', 'storyboard'))
     still_dir = os.path.join(out_dir, 'stills')

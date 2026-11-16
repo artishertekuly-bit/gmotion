@@ -43,12 +43,33 @@ The `//` comments below are explanations only - real JSON files cannot contain c
   "faces": "analysis/faces.jsonl",
   "matte_body": "matte/presenter_body.mov",
   "matte_head": "matte/presenter_head.mov",
-  "framing": {                              // scale is relative to "just fills the frame"; face_y = face height as a fraction of H
-    "wide":  { "scale": 1.0125, "face_y": 0.396 },
-    "tight": { "scale": 1.30,   "face_y": 0.406 },
-    "half":  { "scale": 1.24,   "face_y": 0.344 }   // presenter in the bottom half of split layouts
+  "framing": {                              // pulled-back defaults: auto-adjusted for 16:9->9:16 vs 9:16
+    "wide":  { "scale": 1.00, "face_y": 0.388 },
+    "tight": { "scale": 1.08, "face_y": 0.396 },
+    "half":  { "scale": 1.06, "face_y": 0.344 }
   }
 }
+```
+
+### Beats & Compound Keyframes (`beats[]` / `keyframes[]`)
+Each beat enforces `2 <= len(animations) <= 4` and explicit `camera_motion`:
+```json
+{
+  "n": 1,
+  "name": "Хук: 160 млн",
+  "t0": 0.0, "t1": 6.0,
+  "preset": "opus_bento_grid_stats",
+  "camera_motion": "punch_in",             // punch_in | slow_push_in | dramatic_pull_out | speaker_whip_pan | handheld_breathing
+  "animations": [
+    { "layer": "camera", "effect": "punch_in", "from": 1.0, "to": 1.24, "t0": 0.0, "t1": 6.0 },
+    { "layer": "graphic", "preset": "opus_bento_grid_stats", "spring": { "stiffness": 220, "damping": 18 } },
+    { "layer": "type_audio", "caption_format": "slot_machine_counter", "sfx": "whoosh" }
+  ]
+}
+```
+
+### HTML Story Payload Fields (`inserts[]` with `preset` or `html_hook` / `custom_html_scene`)
+Chromium passes all semantic insert fields as `window.EDL_PAYLOAD` (`title`, `subtitle`, `label`, `from`, `to`, `suffix`, `kpis`, `items`, `series`, `left_label`, `right_label`, `spoken_words`, `layout`). Never leave generic placeholders (`88%`, `НЕГІЗГІ КӨРСЕТКІШ`, `TODO`).
 ```
 
 ## 3. inserts

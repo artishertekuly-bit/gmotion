@@ -36,14 +36,11 @@ The full render prints size, fps, duration, whether audio is present and the int
 
 ## 3. What a frame is made of (bottom to top)
 
-1. Presenter: the uncut recording, cropped and scaled per piece (wide / tight framing, slow 3%
-   push), with the punch-in keys before inserts. Pieces jump-cut where pauses were removed.
-2. Words behind the head (`behind: true`), then the presenter's head (head matte) on top again.
-3. Inserts at their transition positions: `full` inserts with whip / zoom / bulge entries and
-   horizontal motion blur; split blocks (footage half sliding in, presenter half, divider);
-   invert and silhouette flashes.
-4. Front text (all other text).
-5. Look: halftone overlay, vignette, grain.
+1. Presenter: cropped and dynamically scaled per frame via `presenter()` + `camera_motion(t)` (one of 5 camera presets: `punch_in` `1.00->1.24`, `slow_push_in` `1.00->1.18` `easeInOutSine`, `dramatic_pull_out` `1.24->1.00`, `speaker_whip_pan` `1.08->1.16` + X track, plus subtle continuous `±1.5%` `handheld_breathing` drift). Tracks active speaker per `faces.jsonl` (`active_speaker_id`, `instant cut` on hard cuts or `0.35s easeOutCubic` whip-pan).
+2. Words behind the head (`behind: true`), or `behind_speaker` giant titles (`<=15%` quota, `>=160px`), then the presenter's head/body matte on top.
+3. Inserts at their transition positions: `full` (`100%` B-roll / Chromium story scenes) with whip / zoom / bulge / flood entries and motion blur; `split` blocks (top `1080x960` animated story scene/footage sliding in, presenter bottom `1080x960`, seam divider); `cards` / `cutout` / `bar` / `number` / `converge`.
+4. Front multi-font captions (`Impact`, `Clean`, `Editorial Italic`, `Tech Mono` paired inline via `word_fonts`) + animated graffiti underline wipes & Frazix barcodes.
+5. Look: drifting subtle halftone texture, vignette, film grain.
 
 Each insert is composed at its own local time like a precomp: clips cover their area (`fx` picks
 the horizontal focus), push from `zoom[0]` to `zoom[1]`, play at `speed` (slowed automatically if a
