@@ -44,7 +44,7 @@ on:
 jobs:
   cloud-render:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
 
     steps:
       - name: Checkout repository
@@ -270,7 +270,7 @@ jobs:
           OUT_MASTER="$PROJECT_DIR/render/master.mp4"
           OUT_PHONE="$PROJECT_DIR/render/master_phone.mp4"
           python -X utf8 "$SKILL_DIR/engine/scripts/render_reel.py" "$EDL_PATH" --out "$OUT_MASTER" --crf 12 --workers 4
-          ffmpeg -v error -y -i "$OUT_MASTER" -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart "$OUT_PHONE"
+          ffmpeg -v error -y -i "$OUT_MASTER" -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart "$OUT_PHONE"
           python -X utf8 "$SKILL_DIR/scripts/review_render.py" "$OUT_MASTER" --edl "$EDL_PATH" --out-dir "$PROJECT_DIR/qa/review"
 
       - name: Upload Master MP4, Phone MP4, and QA contact sheets
