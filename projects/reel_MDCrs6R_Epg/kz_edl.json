@@ -594,8 +594,7 @@
         "ҚАНША"
       ],
       "left_label": "ТЕҢГЕГЕ",
-      "right_label": "СӨЙТЕМ",
-      "custom_html_scene": "motion_hooks/scene_b6_currency_compare.html"
+      "right_label": "СӨЙТЕМ"
     },
     {
       "id": "hook_b7_pixelfx_full",

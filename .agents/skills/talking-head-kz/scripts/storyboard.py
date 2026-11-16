@@ -259,7 +259,7 @@ def route_mastery_v2(edl, words, project_dir=None, write_custom_scenes=False):
                 for k in ('title', 'subtitle', 'label', 'from', 'to', 'suffix', 'kpis', 'items', 'left_label', 'right_label'):
                     if k not in i and meta.get(k) not in (None, '', []):
                         i[k] = meta[k]
-            if write_custom_scenes and project_dir and i.get('kind') in ('full',) and not i.get('html_hook') and not i.get('custom_html_scene'):
+            if write_custom_scenes and project_dir and i.get('kind') in ('full',) and not i.get('preset') and not i.get('html_hook') and not i.get('custom_html_scene'):
                 if meta['metaphor'] in ('call_ui', 'currency_compare', 'process_steps'):
                     i['custom_html_scene'] = generate_custom_html_scene(project_dir, idx, meta)
 
