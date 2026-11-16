@@ -11,9 +11,9 @@
 <script>
 HookCore.initStage((ctx, t, imgs, cfg) => {
   const { clamp, seg, springPhys, envelope, roundRectPath, drawStageBackdrop, deriveText } = HookCore;
+  drawStageBackdrop(ctx, cfg.W, cfg.H, cfg, t);
   const { alpha } = envelope(t, cfg.dur);
   if (alpha <= 0.005) return;
-  drawStageBackdrop(ctx, cfg.W, cfg.H, cfg, t);
   const { title, subtitle, label, tokens } = deriveText(cfg);
 
   // Bespoke Currency / Value Comparison Bar Scene

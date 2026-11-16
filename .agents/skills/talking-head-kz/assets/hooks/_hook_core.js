@@ -135,6 +135,7 @@
   function drawStageBackdrop(ctx, w, h, cfg, t) {
     if (!cfg.isFull && !cfg.isSplit) return;
     ctx.save();
+    ctx.globalAlpha = 1;
     const g = ctx.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, '#0B0B0E');
     g.addColorStop(0.55, '#131118');
@@ -202,6 +203,10 @@
     const cfg0 = getConfig();
     const cW = cfg0.W || W;
     const cH = cfg0.H || H;
+    if (cfg0.isFull || cfg0.isSplit) {
+      document.documentElement.style.background = '#0B0B0E';
+      if (document.body) document.body.style.background = '#0B0B0E';
+    }
     const canvas = document.getElementById('stage') || (() => {
       const c = document.createElement('canvas');
       c.id = 'stage';

@@ -35,8 +35,8 @@ HookCore.initStage((ctx, t, imgs, cfg) => {
   ctx.lineWidth = 4;
   ctx.stroke();
 
-  const stateA = [[200, cy - 30], [360, cy + 40], [520, cy + 10], [680, cy + 90], [860, cy + 110]];
-  const stateB = [[200, cy + 95], [360, cy + 50], [520, cy - 10], [680, cy - 75], [860, cy - 125]];
+  const stateA = [[200, cy - 15], [360, cy + 48], [520, cy + 20], [680, cy + 95], [860, cy + 115]];
+  const stateB = [[200, cy + 95], [360, cy + 52], [520, cy + 8], [680, cy - 35], [860, cy - 62]];
   ctx.beginPath();
   for (let i = 0; i < stateA.length; i++) {
     const px = lerp(stateA[i][0], stateB[i][0], u);

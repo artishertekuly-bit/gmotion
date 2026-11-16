@@ -356,7 +356,7 @@ class Renderer:
                 dur = max(ck['t1'] - ck['t0'], 0.05)
                 u = min(1.0, dt / dur)
                 ease_sine = 0.5 * (1.0 - math.cos(math.pi * u))
-                taper = bez(min(1.0, rem / 0.45), 0.65, 0.85)
+                taper = bez(min(1.0, rem / 0.72), 0.65, 0.85)
                 ef = ck.get('effect', 'slow_push_in')
 
                 if ef in ('punch_in', 'snap_punch'):
@@ -370,7 +370,7 @@ class Renderer:
                 elif ef in ('dramatic_pull_out', 'zoom_out'):
                     start_s = min(ck.get('from_scale', 1.24), 1.24)
                     end_s = max(ck.get('to_scale', 1.00), 1.00)
-                    mul *= start_s + (end_s - start_s) * ease_sine
+                    mul *= start_s + (end_s - start_s) * ease_sine * min(1.0, dt / 0.35) + (1.0 - min(1.0, dt / 0.35)) * end_s
                 elif ef in ('speaker_whip_pan', 'whip_pan', 'smooth_pan'):
                     dx += math.sin(u * math.pi) * 28.0
                     mul *= 1.08 + 0.08 * math.sin(u * math.pi)

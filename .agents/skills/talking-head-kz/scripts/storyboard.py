@@ -55,13 +55,15 @@ def generate_custom_html_scene(project_dir, beat_idx, metaphor_info):
   const ringP = (t * 1.8) % 1;
 
   // Expanding sonar call rings behind phone frame
+  ctx.save();
   for (let i = 0; i < 3; i++) {
     const ru = (t * 0.9 + i * 0.33) % 1;
     ctx.strokeStyle = cfg.accent2;
-    ctx.globalAlpha = (1 - ru) * 0.38 * alpha;
+    ctx.globalAlpha = (1 - ru) * 0.42 * alpha;
     ctx.lineWidth = 4;
     ctx.beginPath(); ctx.arc(cx, cy, 180 + ru * 280, 0, Math.PI * 2); ctx.stroke();
   }
+  ctx.restore();
 
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -194,9 +196,9 @@ def generate_custom_html_scene(project_dir, beat_idx, metaphor_info):
 <script>
 HookCore.initStage((ctx, t, imgs, cfg) => {{
   const {{ clamp, seg, springPhys, envelope, roundRectPath, drawStageBackdrop, deriveText }} = HookCore;
+  drawStageBackdrop(ctx, cfg.W, cfg.H, cfg, t);
   const {{ alpha }} = envelope(t, cfg.dur);
   if (alpha <= 0.005) return;
-  drawStageBackdrop(ctx, cfg.W, cfg.H, cfg, t);
   const {{ title, subtitle, label, tokens }} = deriveText(cfg);
 {body_js}
 }}, {{}});

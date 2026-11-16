@@ -31,7 +31,19 @@ HookCore.initStage((ctx, t, imgs, cfg) => {
   ctx.translate(cfg.W / 2, cfg.cy);
   ctx.rotate(cardRot);
   ctx.scale(cardScale, cardScale);
-  drawAsset(ctx, imgs.dossier, 0, 0, 820, 0, 0.96);
+
+  // Guaranteed crisp manila dossier folder base (even if PNG has transparency or dark tone)
+  roundRectPath(ctx, -390, -175, 210, 46, 14);
+  ctx.fillStyle = '#DDD0B8';
+  ctx.fill();
+  roundRectPath(ctx, -390, -145, 780, 315, 22);
+  ctx.fillStyle = '#F3EBDC';
+  ctx.fill();
+  ctx.strokeStyle = '#C9BBA3';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  drawAsset(ctx, imgs.dossier, 0, 0, 820, 0, 0.32);
 
   if (label) {
     ctx.fillStyle = '#0B0B0B';

@@ -264,8 +264,13 @@ def build_plan(edl_path):
     texts = [dict(t) for t in edl.get('text', [])]
     pw_path = os.path.join(P, 'analysis', 'program_words.json')
     pwords = load_json(pw_path) if os.path.exists(pw_path) else []
+    split_ivs = [(i['t0'], i['t1']) for i in inserts if i.get('layout') == 'split']
     for T in texts:
         T.setdefault('color', '#FFFFFF')
+        # Keep subtitles clear of bottom-half speaker face during split-screen scenes (~956px seam)
+        if not T.get('behind') and T.get('y', 1290) > 1020 and T.get('y', 1290) < 1390:
+            if any(a - 0.05 <= T['t0'] < b - 0.05 for a, b in split_ivs):
+                T['y'] = 956
         # KZ patch: default entrance by role (word_pop / terminal / pill pop / rise)
         if 'anim' not in T:
             if T.get('font') == 'mono':
