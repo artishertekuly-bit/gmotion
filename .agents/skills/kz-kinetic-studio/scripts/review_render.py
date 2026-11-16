@@ -104,7 +104,7 @@ def main():
                     cm = a_.get('effect', '')
                     break
         if cm in ('punch_in', 'slow_push_in', 'dramatic_pull_out', 'speaker_whip_pan', 'handheld_breathing', 'whip_pan', 'snap_punch'):
-            plan(bt['t0'], 'beat camera (%s)' % cm, before=1, after=6)
+            plan(bt['t0'], 'beat camera (%s)' % cm, before=10, after=10)
     faces_p = os.path.join(P, 'analysis', 'faces.jsonl')
     if os.path.exists(faces_p):
         prev_sid = None

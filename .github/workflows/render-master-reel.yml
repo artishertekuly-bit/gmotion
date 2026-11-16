@@ -272,7 +272,7 @@ jobs:
           mkdir -p "$PROJECT_DIR/render" "$PROJECT_DIR/qa"
           OUT_MASTER="$PROJECT_DIR/render/master.mp4"
           OUT_PHONE="$PROJECT_DIR/render/master_phone.mp4"
-          python -X utf8 "$SKILL_DIR/engine/scripts/render_reel.py" "$EDL_PATH" --out "$OUT_MASTER" --crf 20 --workers 4 --cleanup
+          python -X utf8 "$SKILL_DIR/engine/scripts/render_reel.py" "$EDL_PATH" --out "$OUT_MASTER" --crf 24 --workers 4 --cleanup
           cp -f "$OUT_MASTER" "$OUT_PHONE"
           python -X utf8 "$SKILL_DIR/scripts/review_render.py" "$OUT_MASTER" --edl "$EDL_PATH" --out-dir "$PROJECT_DIR/qa/review"
 

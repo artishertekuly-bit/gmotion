@@ -365,7 +365,7 @@
       "to": 160000000,
       "suffix": "₸",
       "x": 540,
-      "y": 380,
+      "y": 310,
       "width": 880,
       "height": 420,
       "blur_bg": true,
@@ -415,7 +415,7 @@
       "badge": "fakt",
       "stamp": "НАҚТЫ ФАКТ",
       "x": 540,
-      "y": 410,
+      "y": 330,
       "width": 920,
       "height": 520,
       "blur_bg": true,
@@ -438,7 +438,7 @@
       "t0": -0.35,
       "t1": 0.51,
       "x": 540,
-      "y": 1380,
+      "y": 1370,
       "size": 92,
       "color": "#FFD600",
       "anim": "pop",
@@ -1208,48 +1208,62 @@
       "fadeout": false
     },
     {
-      "font": "impact",
-      "caption_format": "asymmetric_bento_stack",
-      "text": "СТРАХ БАР",
+      "font": "clean",
+      "word_fonts": [
+        "impact",
+        "clean"
+      ],
+      "word_scales": [
+        1.4,
+        1.0
+      ],
+      "caption_format": "keyword_spotlight_burst",
+      "text": "страх бар",
       "t0": 48.813,
-      "t1": 53.5,
-      "x": 445,
-      "y": 1320,
-      "size": 80,
-      "color": "#FFD600",
-      "anim": "rise",
+      "t1": 50.233,
+      "x": 540,
+      "y": 1335,
+      "size": 69,
+      "color": "#FFFFFF",
+      "highlight_color": "#FFD600",
+      "wt": [
+        48.813,
+        49.313
+      ],
+      "underline": "yellow",
+      "anim": "word_pop",
       "glow": true,
+      "glow_color": "#FFD600",
       "shadow": true,
+      "sfx": "pop",
       "fadeout": false
     },
     {
-      "font": "clean",
-      "caption_format": "asymmetric_bento_stack",
-      "text": "жоқшылықтан",
+      "font": "tech",
+      "word_fonts": [
+        "impact",
+        "impact",
+        "clean"
+      ],
+      "word_scales": [
+        1.35,
+        1.25,
+        1.0
+      ],
+      "caption_format": "whisper_glitch_box",
+      "text": "жоқшылықтан страх бар",
       "t0": 51.714,
       "t1": 53.5,
-      "x": 575,
-      "y": 1320,
-      "size": 67,
-      "color": "#FFFFFF",
-      "anim": "rise",
-      "glow": false,
-      "shadow": true,
-      "fadeout": false
-    },
-    {
-      "font": "editorial",
-      "caption_format": "asymmetric_bento_stack",
-      "text": "страх бар",
-      "t0": 52.314,
-      "t1": 53.5,
-      "x": 485,
-      "y": 1320,
-      "size": 58,
+      "x": 540,
+      "y": 1335,
+      "size": 54,
       "color": "#EDE6DE",
-      "anim": "rise",
-      "glow": false,
-      "shadow": true,
+      "highlight_color": "#FFD600",
+      "anim": "glitch",
+      "pill": "#14161D",
+      "pill_radius": 0.22,
+      "pill_opacity": 0.88,
+      "sfx": "pop",
       "fadeout": false
     },
     {
@@ -1271,8 +1285,8 @@
   ],
   "look": {
     "halftone_opacity": 0,
-    "vignette": 28,
-    "grain": 3
+    "vignette": 20,
+    "grain": 0
   },
   "framing": {
     "wide": {

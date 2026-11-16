@@ -85,8 +85,8 @@
   "said": "Страх бар. Жоқшылықтан страх бар.",
   "enter": "live_speaker + kinetic_subs",
   "cam": "handheld_breathing",
-  "sfx": "pop, tick",
-  "text": "СТРАХ БАР / жоқшылықтан / страх бар / пікірге «миллиард» деп жаз",
+  "sfx": "pop",
+  "text": "страх бар / жоқшылықтан страх бар / пікірге «миллиард» деп жаз",
   "preset": "kinetic_subs_only",
   "layers": 3
  }

@@ -59,6 +59,12 @@ def main():
                 last = f
             else:
                 f.update(x=last['x'], y=last['y'], w=last['w'], h=last['h'])
+        if faces:
+            for key in ('x', 'y', 'w', 'h'):
+                arr = np.array([f[key] for f in faces], dtype=np.float32)
+                sm = np.convolve(np.pad(arr, 4, mode='edge'), np.ones(9) / 9.0, mode='valid')
+                for idx_f, val in enumerate(sm):
+                    faces[idx_f][key] = round(float(val), 5)
         with open(faces_path, 'w') as fh:
             for f in faces:
                 fh.write(json.dumps(f) + '\n')

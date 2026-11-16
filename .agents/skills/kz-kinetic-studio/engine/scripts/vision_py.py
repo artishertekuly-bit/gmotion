@@ -28,6 +28,9 @@ FACE_LANDMARKER_URL = (
 
 
 def _ensure_face_landmarker_model():
+    bundled = os.path.abspath(os.path.join(HERE, '..', '..', 'assets', 'models', 'face_landmarker.task'))
+    if os.path.exists(bundled) and os.path.getsize(bundled) > 100000:
+        return bundled
     cache_dir = os.path.join(os.path.dirname(HERE), '.cache', 'vision')
     os.makedirs(cache_dir, exist_ok=True)
     model_path = os.path.join(cache_dir, 'face_landmarker.task')
@@ -41,8 +44,8 @@ def _ensure_face_landmarker_model():
             with open(model_path, 'wb') as fh:
                 fh.write(data)
             return model_path
-    except Exception:
-        pass
+    except Exception as exc:
+        sys.stderr.write(f'vision_py: face_landmarker model download warn: {exc}\n')
     return None
 
 
@@ -99,9 +102,11 @@ def _init_face_detector():
                 min_face_detection_confidence=0.45,
                 min_face_presence_confidence=0.45,
             )
-            return ('landmarker', mp_vision.FaceLandmarker.create_from_options(opts), mp)
-    except Exception:
-        pass
+            det = mp_vision.FaceLandmarker.create_from_options(opts)
+            sys.stderr.write(f'vision_py: initialized FaceLandmarker ({os.path.basename(model_path)})\n')
+            return ('landmarker', det, mp)
+    except Exception as exc:
+        sys.stderr.write(f'vision_py: FaceLandmarker unavailable ({exc}), trying fallback...\n')
     # 2) Legacy MediaPipe solutions FaceMesh / FaceDetection
     try:
         import mediapipe as mp
@@ -230,12 +235,10 @@ def run_person_track(video_path, faces_path, w, h, fps=30.0, faces_only=False):
     from PIL import Image
     ff = find_ffmpeg()
     face_det = _init_face_detector()
-    rembg_remove, rembg_sess, mp_selfie = None, None, None
-    if not faces_only:
-        rembg_remove, rembg_sess = _init_rembg_session('u2net_human_seg')
-        mp_selfie = _init_mp_selfie() if rembg_remove is None else None
-        if rembg_remove is None and mp_selfie is None:
-            sys.exit('ERROR: Install `rembg onnxruntime mediapipe` for cross-platform person segmentation.')
+    rembg_remove, rembg_sess = (None, None) if faces_only else _init_rembg_session('u2net_human_seg')
+    mp_selfie = _init_mp_selfie() if (faces_only or rembg_remove is None) else None
+    if not faces_only and rembg_remove is None and mp_selfie is None:
+        sys.exit('ERROR: Install `rembg onnxruntime mediapipe` for cross-platform person segmentation.')
 
     win_len = max(5, int(round(float(fps) * 0.5)))
     tracks = []  # [{'id': int, 'x': float, 'y': float, 'mar_hist': [float, ...]}]
@@ -269,11 +272,16 @@ def run_person_track(video_path, faces_path, w, h, fps=30.0, faces_only=False):
                 else:
                     seg = mp_selfie.process(rgb).segmentation_mask
                     mask = np.clip(seg * 255.0 + 0.5, 0, 255).astype(np.uint8)
-
                 if not detected:
                     fb = _estimate_face_from_mask(mask)
                     if fb is not None:
                         detected = [(fb[0], fb[1], fb[2], fb[3], 0.0)]
+            elif not detected and mp_selfie is not None:
+                seg = mp_selfie.process(rgb).segmentation_mask
+                m_fb = np.clip(seg * 255.0 + 0.5, 0, 255).astype(np.uint8)
+                fb = _estimate_face_from_mask(m_fb)
+                if fb is not None:
+                    detected = [(fb[0], fb[1], fb[2], fb[3], 0.0)]
 
             # Assign speaker IDs + record MAR sliding window variance (0.5s)
             frame_speakers = []
