@@ -49,8 +49,10 @@ Never run the pill for more than ~6 s without a stack or a card; never two stack
 - 1.4-2.8 s each, 3-5 of them in a 25-30 s reel, the first one inside the first 3-4 s;
 - neighbouring cards differ in colour; one red word per screen (on a red card the words are white).
 
-**The speaker** alternates `wide` and `tight` at beat boundaries (hides the jump cuts), tight on the hook and on
-emphasis. No framing shorter than 1 s.
+**The speaker** alternates `wide` (`scale: 1.00`) and subtle `tight` (`scale: 1.08–1.12`) at beat boundaries (hides the
+jump cuts) — keep the framing pulled back so head, shoulders and breathing room stay comfortable without claustrophobic
+close-ups (`zoom_push` capped at `1.04x`, no punch-in zoom on transparent `overlay` inserts). `vision_py.py` keeps the
+speaker centred using face detection plus silhouette-head fallback. No framing shorter than 1 s.
 
 **Palette**: white, one red (`#E02B20`; darker `#C4151C` for a full red card), near-black `#161216`, off-white
 `#F4F1EC`, plus ONE colour picked from the footage (the reference took dark green from the microphone: `#2F3E2E`).

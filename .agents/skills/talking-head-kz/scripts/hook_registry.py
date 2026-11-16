@@ -185,7 +185,7 @@ def build_compound_keyframes(t0, t1, preset=None, caption_format='word_by_word_p
     cam = (HOOK_CATALOG.get(preset, {}).get('camera_default') if preset else None) or cam_choices[role_index % len(cam_choices)]
     cam_anim = {'layer': 'camera', 'effect': cam, 't0': round(t0, 3), 't1': round(t1, 3)}
     if cam == 'zoom_push':
-        cam_anim.update({'from': 1.0, 'to': 1.10})
+        cam_anim.update({'from': 1.0, 'to': 1.04})
     elif cam == 'smooth_pan':
         cam_anim.update({'pan_px': 22 if role_index % 2 == 0 else -22})
     else:
@@ -242,7 +242,7 @@ def balance_keyframe_stack(animations, t0=0.0, t1=2.0, role_index=0):
     if len(items) < 2:
         existing_roles = {a.get('layer') for a in items}
         if 'camera' not in existing_roles:
-            items.insert(0, {'layer': 'camera', 'effect': 'zoom_push', 'from': 1.0, 'to': 1.10, 't0': round(t0, 3), 't1': round(t1, 3)})
+            items.insert(0, {'layer': 'camera', 'effect': 'zoom_push', 'from': 1.0, 'to': 1.04, 't0': round(t0, 3), 't1': round(t1, 3)})
         if len(items) < 2 and 'type_audio' not in existing_roles:
             items.append({'layer': 'type_audio', 'caption_format': 'word_by_word_pop', 'sfx': 'pop', 't0': round(t0, 3), 't1': round(t1, 3)})
         if len(items) < 2 and 'depth' not in existing_roles:

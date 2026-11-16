@@ -329,11 +329,11 @@ class Renderer:
                 if ef == 'zoom_push':
                     rise = bez(min(1.0, dt / max(0.45, dur - 0.55)), 0.55, 0.9)
                     env = rise * bez(taper, 0.65, 0.85)
-                    cap_to = min(ck.get('to_scale', 1.07), 1.07)
+                    cap_to = min(ck.get('to_scale', 1.04), 1.04)
                     mul *= ck.get('from_scale', 1.0) + (cap_to - ck.get('from_scale', 1.0)) * env
                 elif ef == 'snap_punch':
                     attack = min(1.0, dt / 0.08)
-                    mul *= 1.0 + 0.07 * attack * math.exp(-dt * 7.5) * math.cos(dt * 10.0) * min(1.0, rem / 0.16)
+                    mul *= 1.0 + 0.04 * attack * math.exp(-dt * 7.5) * math.cos(dt * 10.0) * min(1.0, rem / 0.16)
                 elif ef == 'smooth_pan':
                     dx += math.sin(u * math.pi) * 24.0
                 elif ef == 'micro_shake' and dt < 0.36:

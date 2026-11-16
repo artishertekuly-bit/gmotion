@@ -65,7 +65,15 @@ def build_plan(edl_path):
         GX, GY = sw / 2, sh * 0.35
     fill = max(W / sw, H / sh)
     fill_half = max(W / sw, (H / 2) / sh)
-    fr = dict(wide=dict(scale=1.0125, face_y=0.396), tight=dict(scale=1.30, face_y=0.406), half=dict(scale=1.24, face_y=0.344))
+    # Pulled-back portrait framing: avoid tight close-ups, especially on 16:9->9:16 horizontal footage
+    is_land = sw > sh
+    fr = dict(
+        wide=dict(scale=1.00, face_y=0.388 if is_land else 0.396),
+        tight=dict(scale=1.08 if is_land else 1.12, face_y=0.396 if is_land else 0.402),
+        half=dict(scale=1.06 if is_land else 1.10, face_y=0.344),
+    )
+    for k, v in (edl.get('framing') or {}).items():
+        fr.setdefault(k, {}).update(v)
     for k, v in (pr.get('framing') or {}).items():
         fr.setdefault(k, {}).update(v)
     zoom = edl.get('zoom')
@@ -93,7 +101,7 @@ def build_plan(edl_path):
                 y0 = f['face_y'] * h
                 ax = min(max(GX, w / 2 / s), sw - w / 2 / s)
                 ay = min(max(GY, y0 / s), sh - (h - y0) / s)
-                out.append(dict(t0=a, t1=b, off=c['src_t0'] - c['prog_t0'], s0=s, s1=s * 1.03, y0=y0, ax=ax, ay=ay))
+                out.append(dict(t0=a, t1=b, off=c['src_t0'] - c['prog_t0'], s0=s, s1=s * 1.015, y0=y0, ax=ax, ay=ay))
         return out
 
     mattes = {}
@@ -168,7 +176,8 @@ def build_plan(edl_path):
     for i, I in enumerate(inserts):            # a split that follows a split: the previous one stays a moment underneath
         if I['layout'] == 'split' and not I['groupStart'] and i:
             inserts[i - 1]['out'] = max(inserts[i - 1]['out'], I['t0'] + 0.35)
-    full = [I for I in inserts if I['layout'] != 'split']
+    # Skip 112% base punch-in for overlay inserts where presenter stays visible on screen
+    full = [I for I in inserts if I['layout'] != 'split' and I['kind'] != 'overlay']
     base_keys = []
     for q, I in enumerate(full):
         tr = I['trans']
@@ -179,10 +188,10 @@ def build_plan(edl_path):
         if entry > 0 and adjacent:
             prev['out'] = I['in'] + entry + 0.02
         if not adjacent:
-            base_keys += [(I['in'] - 0.18, 100.0), (I['in'], 122.0)]
+            base_keys += [(I['in'] - 0.18, 100.0), (I['in'], 112.0)]
         nxt = full[q + 1] if q < len(full) - 1 else None
         if (not nxt or nxt['in'] - I['out'] > 0.3) and not I.get('norelease'):
-            base_keys += [(I['out'], 116.0), (I['out'] + 0.22, 100.0)]
+            base_keys += [(I['out'], 108.0), (I['out'] + 0.22, 100.0)]
     base_keys.sort()
 
     # ---- text rules

@@ -46,6 +46,16 @@ def _init_face_detector():
             return ('solutions', mp.solutions.face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.45))
     except Exception:
         pass
+    try:
+        import cv2
+        xml = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_alt2.xml')
+        if not os.path.exists(xml):
+            xml = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml')
+        clf = cv2.CascadeClassifier(xml)
+        if not clf.empty():
+            return ('cv2', clf)
+    except Exception:
+        pass
     return (None, None)
 
 
@@ -60,7 +70,34 @@ def _detect_face(det_tuple, rgb):
             cx = float(bb.xmin + bb.width / 2.0)
             cy = float(bb.ymin + bb.height / 2.0)
             return cx, cy, float(bb.width), float(bb.height)
+    elif kind == 'cv2' and det is not None:
+        import cv2
+        h, w = rgb.shape[:2]
+        gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
+        rects = det.detectMultiScale(gray, scaleFactor=1.12, minNeighbors=4, minSize=(max(32, w // 18), max(32, h // 18)))
+        if len(rects):
+            rx, ry, rw, rh = max(rects, key=lambda r: int(r[2]) * int(r[3]))
+            return (rx + rw * 0.5) / w, (ry + rh * 0.5) / h, rw / float(w), rh / float(h)
     return None
+
+
+def _estimate_face_from_mask(mask):
+    """Fallback head box derived from the upper third of the rembg foreground silhouette."""
+    ys, xs = np.where(mask >= 128)
+    if len(ys) < 40:
+        return None
+    h, w = mask.shape[:2]
+    y_min, y_max = int(ys.min()), int(ys.max())
+    body_h = max(1, y_max - y_min)
+    head_band = mask[y_min:min(h, y_min + max(24, int(body_h * 0.34)))]
+    hy, hx = np.where(head_band >= 128)
+    if len(hx) < 20:
+        return None
+    cx = float(np.median(hx)) / float(w)
+    hw = max(0.08, float(np.percentile(hx, 95) - np.percentile(hx, 5)) / float(w))
+    hh = max(hw * float(w) / float(h) * 1.15, float(body_h) * 0.28 / float(h))
+    cy = float(y_min) / float(h) + hh * 0.52
+    return cx, cy, hw, hh
 
 
 def _init_rembg_session(model_name):
@@ -109,12 +146,6 @@ def run_person_track(video_path, faces_path, w, h):
     try:
         for idx, rgb in enumerate(_iter_rgb_frames(ff, video_path, w, h)):
             face = _detect_face(face_det, rgb)
-            if fh is not None:
-                rec = {'f': idx}
-                if face is not None:
-                    rec.update(x=round(face[0], 5), y=round(face[1], 5), w=round(face[2], 5), h=round(face[3], 5))
-                fh.write(json.dumps(rec) + '\n')
-
             if rembg_remove is not None:
                 m_img = rembg_remove(Image.fromarray(rgb), session=rembg_sess, only_mask=True)
                 mask = np.asarray(m_img.resize((w, h)), dtype=np.uint8)
@@ -123,6 +154,14 @@ def run_person_track(video_path, faces_path, w, h):
             else:
                 seg = mp_selfie.process(rgb).segmentation_mask
                 mask = np.clip(seg * 255.0 + 0.5, 0, 255).astype(np.uint8)
+
+            if face is None:
+                face = _estimate_face_from_mask(mask)
+            if fh is not None:
+                rec = {'f': idx}
+                if face is not None:
+                    rec.update(x=round(face[0], 5), y=round(face[1], 5), w=round(face[2], 5), h=round(face[3], 5))
+                fh.write(json.dumps(rec) + '\n')
 
             out.write(mask.tobytes())
         out.flush()
