@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=920, height=520, initial-scale=1.0" />
+<title>Hero: Editorial Paper-Cut Collage</title>
+<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<script src="_hook_core.js"></script>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<script>
+HookCore.initStage((ctx, t, imgs, cfg) => {
+  const { springPhys, envelope, drawAsset, roundRectPath, deriveText } = HookCore;
+  const { alpha } = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+
+  const { title, subtitle, label } = deriveText(cfg);
+  const stampText = String(cfg.stamp || '').trim().toUpperCase().slice(0, 16);
+  const sp = springPhys(t, 230, 18);
+  const rot = (-2.6 + Math.sin(t * 1.35) * 0.45) * Math.PI / 180;
+  const cx = cfg.W * 0.5, cy = cfg.H * 0.52;
+  const cw = 770, ch = 330;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  drawAsset(ctx, imgs.dotgrid, cx, cy + (1 - sp) * 20, 860, 0, 0.24 * alpha);
+
+  ctx.save();
+  ctx.translate(cx, cy + (1 - sp) * 44);
+  ctx.rotate(rot);
+  const sc = 0.88 + 0.12 * sp;
+  ctx.scale(sc, sc);
+
+  // Tactile manila/parchment folder shadow + warm archival base
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.46)';
+  ctx.shadowBlur = 34;
+  ctx.shadowOffsetY = 16;
+  roundRectPath(ctx, -cw / 2, -ch / 2 - 34, 210, 48, 14);
+  ctx.fillStyle = '#DDD0B5';
+  ctx.fill();
+  roundRectPath(ctx, -cw / 2, -ch / 2, cw, ch, 24);
+  const pg = ctx.createLinearGradient(0, -ch / 2, 0, ch / 2);
+  pg.addColorStop(0, '#F6EEDB');
+  pg.addColorStop(1, '#E9DDC2');
+  ctx.fillStyle = pg;
+  ctx.fill();
+  ctx.restore();
+
+  // Clip organic textures cleanly inside paper card
+  ctx.save();
+  roundRectPath(ctx, -cw / 2, -ch / 2, cw, ch, 24);
+  ctx.clip();
+  drawAsset(ctx, imgs.dossier, 0, 0, cw + 40, 0, 0.24);
+  drawAsset(ctx, imgs.torn, 0, -ch / 2 + 26, cw + 30, 0, 0.48);
+  ctx.restore();
+
+  // Crisp paper rim
+  roundRectPath(ctx, -cw / 2, -ch / 2, cw, ch, 24);
+  ctx.strokeStyle = 'rgba(130, 110, 82, 0.38)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  if (label) {
+    ctx.fillStyle = '#5B4934';
+    ctx.font = '800 21px "JetBrains Mono", Consolas, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(label.toUpperCase().slice(0, 30), -cw / 2 + 46, -ch / 2 + 64);
+  }
+
+  ctx.fillStyle = '#181310';
+  ctx.font = '900 44px "Unbounded", "Montserrat", sans-serif';
+  ctx.textAlign = 'left';
+  const upTitle = title.toUpperCase();
+  ctx.fillText(upTitle.slice(0, 21), -cw / 2 + 46, -12);
+  if (upTitle.length > 21) ctx.fillText(upTitle.slice(21, 42), -cw / 2 + 46, 44);
+
+  if (subtitle) {
+    ctx.fillStyle = '#43382E';
+    ctx.font = 'italic 700 28px "Playfair Display", Georgia, serif';
+    ctx.fillText(subtitle.slice(0, 36), -cw / 2 + 46, upTitle.length > 21 ? 98 : 48);
+  }
+
+  // Archival barcode anchor bottom-left
+  drawAsset(ctx, imgs.barcode, -cw / 2 + 135, ch / 2 - 42, 178, 0, 0.78);
+
+  // Stamped local graffiti / editorial seal bottom-right
+  const stampSp = springPhys(Math.max(0, t - 0.34), 280, 15);
+  if (stampSp > 0.01) {
+    const badgeImg = cfg.badge === 'erezhe' ? imgs.erezhe : imgs.fakt;
+    if (badgeImg && badgeImg.complete && badgeImg.naturalWidth && !stampText) {
+      drawAsset(ctx, badgeImg, cw / 2 - 118, ch / 2 - 64, 165 * (1.18 - 0.18 * stampSp), 0, 0.94, -0.14);
+    } else {
+      const txt = stampText || label || 'ФАКТ';
+      ctx.save();
+      ctx.translate(cw / 2 - 140, ch / 2 - 58);
+      ctx.rotate(-0.15);
+      const ss = 1.18 - 0.18 * stampSp;
+      ctx.scale(ss, ss);
+      roundRectPath(ctx, -112, -26, 224, 52, 8);
+      ctx.strokeStyle = cfg.danger;
+      ctx.lineWidth = 4.5;
+      ctx.stroke();
+      ctx.fillStyle = cfg.danger;
+      ctx.textAlign = 'center';
+      ctx.font = '900 22px "JetBrains Mono", monospace';
+      ctx.fillText(txt, 0, 8);
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+  ctx.restore();
+}, {
+  dossier: '../frazix/frazix_dossier_card.png',
+  torn: '../graffiti/torn_paper_strip.png',
+  dotgrid: '../frazix/frazix_dotgrid.png',
+  barcode: '../frazix/frazix_barcode.png',
+  fakt: '../graffiti/badge_fakt.png',
+  erezhe: '../graffiti/badge_erezhe.png',
+}, { W: 920, H: 520 });
+</script>
+</body>
+</html>

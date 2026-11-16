@@ -8,7 +8,7 @@ on:
       - 'projects/**/edl.json'
       - 'projects/**/motion_hooks/**'
       - 'projects/**/podcast_source.json'
-      - '.agents/skills/talking-head-kz/**'
+      - '.agents/skills/kz-kinetic-studio/**'
       - '.github/workflows/render-master-reel.yml'
   workflow_dispatch:
     inputs:
@@ -35,7 +35,7 @@ on:
       render_fps:
         description: 'Hook/render fps'
         required: false
-        default: '60'
+        default: '30'
       run_mattes:
         description: 'Generate mediapipe+rembg speaker mattes for 3-layer depth'
         required: false
@@ -117,7 +117,7 @@ jobs:
                   os.remove(p_rem)
           PY
           fc-cache -f
-          python -X utf8 .agents/skills/talking-head-kz/scripts/font_check.py --roles || true
+          python -X utf8 .agents/skills/kz-kinetic-studio/scripts/font_check.py --roles || true
 
       - name: Resolve active project and EDL path
         id: resolve
@@ -191,13 +191,13 @@ jobs:
             echo "Using presenter footage already committed inside $PROJECT_DIR."
           fi
 
-      - name: Prepare timeline, cut pauses, master audio, and speaker mattes (MediaPipe + rembg)
+      - name: Prepare timeline, cut pauses, master audio, and multi-speaker face track (MediaPipe)
         if: steps.resolve.outputs.skip != 'true'
         env:
           PROJECT_DIR: ${{ steps.resolve.outputs.project_dir }}
           EDL_PATH: ${{ steps.resolve.outputs.edl_path }}
           RUN_MATTES: ${{ github.event.inputs.run_mattes || 'true' }}
-          SKILL_DIR: ${{ github.workspace }}/.agents/skills/talking-head-kz
+          SKILL_DIR: ${{ github.workspace }}/.agents/skills/kz-kinetic-studio
           REEL_KZFONTS_DIR: ${{ github.workspace }}/kzfonts
           REEL_SOUNDEFFECTS_DIR: ${{ github.workspace }}/soundeffects
         run: |
@@ -215,17 +215,20 @@ jobs:
           if [ ! -f "$PROJECT_DIR/audio/program_master.wav" ]; then
             python -X utf8 "$SKILL_DIR/engine/scripts/master_audio.py" "$PROJECT_DIR"
           fi
-          if [ "$RUN_MATTES" = "true" ] && [ ! -f "$PROJECT_DIR/matte/presenter_body.mov" ]; then
+          NEEDS_REMBG=$(python -c "import json; d=json.load(open('$EDL_PATH', encoding='utf-8')); print('1' if any(t.get('behind') for t in d.get('text',[])) or any(i.get('kind')=='cutout' or i.get('depth')=='behind_speaker' for i in d.get('inserts',[])) else '0')")
+          if [ "$RUN_MATTES" = "true" ] && [ "$NEEDS_REMBG" = "1" ] && [ ! -f "$PROJECT_DIR/matte/presenter_body.mov" ]; then
             python -X utf8 "$SKILL_DIR/engine/scripts/presenter_mattes.py" "$PROJECT_DIR" --width 1080
+          elif [ ! -f "$PROJECT_DIR/analysis/faces.jsonl" ]; then
+            python -X utf8 "$SKILL_DIR/engine/scripts/presenter_mattes.py" "$PROJECT_DIR" --width 720 --faces-only
           fi
 
-      - name: Render 40% HTML / Three.js / WebGL motion hooks in Headless Chromium
+      - name: Render 2-3 Hero HTML composites (compact WebM VP9 alpha via image2pipe)
         if: steps.resolve.outputs.skip != 'true'
         env:
           PROJECT_DIR: ${{ steps.resolve.outputs.project_dir }}
           EDL_PATH: ${{ steps.resolve.outputs.edl_path }}
-          RENDER_FPS: ${{ github.event.inputs.render_fps || '60' }}
-          SKILL_DIR: ${{ github.workspace }}/.agents/skills/talking-head-kz
+          RENDER_FPS: ${{ github.event.inputs.render_fps || '30' }}
+          SKILL_DIR: ${{ github.workspace }}/.agents/skills/kz-kinetic-studio
         run: |
           python -X utf8 "$SKILL_DIR/scripts/storyboard.py" "$EDL_PATH" --plan-only --enrich-edl
           python -X utf8 "$SKILL_DIR/scripts/render_hooks_chromium.py" "$EDL_PATH" --fps "$RENDER_FPS"
@@ -235,7 +238,7 @@ jobs:
         env:
           PROJECT_DIR: ${{ steps.resolve.outputs.project_dir }}
           EDL_PATH: ${{ steps.resolve.outputs.edl_path }}
-          SKILL_DIR: ${{ github.workspace }}/.agents/skills/talking-head-kz
+          SKILL_DIR: ${{ github.workspace }}/.agents/skills/kz-kinetic-studio
           REEL_KZFONTS_DIR: ${{ github.workspace }}/kzfonts
           REEL_SOUNDEFFECTS_DIR: ${{ github.workspace }}/soundeffects
         run: |
@@ -257,20 +260,20 @@ jobs:
             python -X utf8 "$SKILL_DIR/scripts/kz_lint.py" "$EDL_PATH" || true
           fi
 
-      - name: Composite 3-layer Master MP4 + 60% dynamic ASS subtitles + Phone H.264 copy
+      - name: Composite Lightweight MP4 (15-25MB) + 80% Kinetic Subtitles & Cleanup
         if: steps.resolve.outputs.skip != 'true'
         env:
           PROJECT_DIR: ${{ steps.resolve.outputs.project_dir }}
           EDL_PATH: ${{ steps.resolve.outputs.edl_path }}
-          SKILL_DIR: ${{ github.workspace }}/.agents/skills/talking-head-kz
+          SKILL_DIR: ${{ github.workspace }}/.agents/skills/kz-kinetic-studio
           REEL_KZFONTS_DIR: ${{ github.workspace }}/kzfonts
         run: |
           set -euo pipefail
           mkdir -p "$PROJECT_DIR/render" "$PROJECT_DIR/qa"
           OUT_MASTER="$PROJECT_DIR/render/master.mp4"
           OUT_PHONE="$PROJECT_DIR/render/master_phone.mp4"
-          python -X utf8 "$SKILL_DIR/engine/scripts/render_reel.py" "$EDL_PATH" --out "$OUT_MASTER" --crf 12 --workers 4
-          ffmpeg -v error -y -i "$OUT_MASTER" -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart "$OUT_PHONE"
+          python -X utf8 "$SKILL_DIR/engine/scripts/render_reel.py" "$EDL_PATH" --out "$OUT_MASTER" --crf 20 --workers 4 --cleanup
+          cp -f "$OUT_MASTER" "$OUT_PHONE"
           python -X utf8 "$SKILL_DIR/scripts/review_render.py" "$OUT_MASTER" --edl "$EDL_PATH" --out-dir "$PROJECT_DIR/qa/review"
 
       - name: Upload Master MP4, Phone MP4, and QA contact sheets

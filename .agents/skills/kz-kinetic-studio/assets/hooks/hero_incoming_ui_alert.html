@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=880, height=360, initial-scale=1.0" />
+<title>Hero: Apple/Telegram Dynamic Glass Notification</title>
+<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent;}canvas{display:block;}</style>
+<script src="_hook_core.js"></script>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<script>
+HookCore.initStage((ctx, t, imgs, cfg) => {
+  const { springPhys, envelope, roundRectPath, drawGlassPanel, deriveText } = HookCore;
+  const { alpha } = envelope(t, cfg.dur);
+  if (alpha <= 0.005) return;
+
+  const { title, subtitle, label } = deriveText(cfg);
+  const sp = springPhys(t, 260, 18);
+  const cx = cfg.W * 0.5;
+  const dropY = -120 + sp * (120 + cfg.H * 0.48);
+  const bw = 760 * (0.62 + 0.38 * Math.min(1, sp));
+  const bh = 176;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cx, dropY);
+
+  // Dynamic Island / iOS Frosted Obsidian Glass Pill Banner (no neon green!)
+  drawGlassPanel(ctx, -bw / 2, -bh / 2, bw, bh, 44, {
+    topFill: 'rgba(26, 28, 36, 0.86)',
+    botFill: 'rgba(15, 16, 22, 0.90)',
+    borderColor: 'rgba(255, 255, 255, 0.28)',
+    borderWidth: 1.6,
+    shadowBlur: 32,
+    shadowOffsetY: 16,
+  });
+
+  // Warm gold pulsing caller badge left
+  const pulse = 1 + 0.06 * Math.sin(t * 7.5);
+  const ax = -bw / 2 + 84;
+  ctx.save();
+  const ag = ctx.createRadialGradient(ax, 0, 10, ax, 0, 56 * pulse);
+  ag.addColorStop(0, 'rgba(255, 214, 0, 0.36)');
+  ag.addColorStop(1, 'rgba(255, 214, 0, 0)');
+  ctx.fillStyle = ag;
+  ctx.beginPath(); ctx.arc(ax, 0, 56 * pulse, 0, Math.PI * 2); ctx.fill();
+
+  const cg = ctx.createLinearGradient(ax, -40, ax, 40);
+  cg.addColorStop(0, '#FFD600');
+  cg.addColorStop(1, '#F59E0B');
+  ctx.fillStyle = cg;
+  ctx.beginPath(); ctx.arc(ax, 0, 40, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#15120D';
+  ctx.font = '900 34px "Unbounded", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('☎', ax, 12);
+  ctx.restore();
+
+  // Headline + sub-context aligned cleanly in middle
+  ctx.textAlign = 'left';
+  if (label) {
+    ctx.fillStyle = cfg.accent;
+    ctx.font = '800 17px "JetBrains Mono", monospace';
+    ctx.fillText(label.toUpperCase().slice(0, 22), -bw / 2 + 150, -34);
+  }
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 36px "Unbounded", "Montserrat", sans-serif';
+  ctx.fillText((title || 'ХАБАРЛАМА').toUpperCase().slice(0, 17), -bw / 2 + 150, 8);
+  if (subtitle) {
+    ctx.fillStyle = 'rgba(237, 232, 224, 0.82)';
+    ctx.font = 'italic 600 24px "Playfair Display", Georgia, serif';
+    ctx.fillText(subtitle.slice(0, 26), -bw / 2 + 150, 44);
+  }
+
+  // Smooth Apple-style rounded golden/white equalizer bars on right
+  const eqBaseX = bw / 2 - 146;
+  for (let b = 0; b < 7; b++) {
+    const bhBar = 14 + Math.abs(Math.sin(t * 7.2 + b * 0.85)) * 52 * Math.min(1, sp);
+    ctx.fillStyle = (b % 2 === 0) ? cfg.accent : 'rgba(255, 255, 255, 0.85)';
+    roundRectPath(ctx, eqBaseX + b * 15, -bhBar / 2, 8, bhBar, 4);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}, {}, { W: 880, H: 360 });
+</script>
+</body>
+</html>
